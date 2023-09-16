@@ -1,3 +1,16 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+* {
+  @apply box-border;
+}
+
+a.active-link {
+  @apply rounded-xl bg-opacity-50 bg-blue-300 hover:bg-opacity-50;
+}
+
+div.htmx-swapping {
+  opacity: 0;
+  transition: opacity 300ms;
+}

@@ -1,0 +1,30 @@
+<div class="bg-gradient-to-b from-indigo-800 to-blue-600 w-14 md:w-56 py-8 md:py-12 shrink-0">
+  <img src="/static/logo.svg" class="w-[60%] max-w-[5rem] mx-auto" loading="eager" width="80px" height="80px" />
+  <h1 class="hidden md:block text-white font-bold text-2xl text-center my-2">quick<span
+      class="text-blue-200">trackr</span></h1>
+  <nav id="primary-nav" hx-push-url="true" hx-target="#slot" hx-swap="innerHTML transition:true"
+    class="text-white flex flex-col items-center font-bold my-6 md:my-8">
+    <ul class="space-y-2">
+      <li><a href="/" hx-on="click:styleActiveLink(this.pathname)"
+          class="flex gap-4 items-center py-2 px-4 hover:rounded-xl hover:bg-opacity-20 hover:bg-blue-300"><img
+            src="/static/icons/overview.svg" class="flex gap-4 w-5 h-5" /><span
+            class="hidden md:block">Overview</span></a></li>
+      <li><a href="/expenses" hx-on="click:styleActiveLink(this.pathname)"
+          class="flex gap-4 items-center py-2 px-4 hover:rounded-xl hover:bg-opacity-20 hover:bg-blue-300"><img
+            src="/static/icons/expenses.svg" class="flex gap-4 w-5 h-5" /><span
+            class="hidden md:block">Expenses</span></a></li>
+      <li><a href="/budgets" hx-on="click:styleActiveLink(this.pathname)"
+          class="flex gap-4 items-center py-2 px-4 hover:rounded-xl hover:bg-opacity-20 hover:bg-blue-300"><img
+            src="/static/icons/budgets.svg" class="flex gap-4 w-5 h-5" /><span
+            class="hidden md:block">Budgets</span></a></li>
+      <li><a href="/categories" hx-on="click:styleActiveLink(this.pathname)"
+          class="flex gap-4 items-center py-2 px-4 hover:rounded-xl hover:bg-opacity-20 hover:bg-blue-300"><img
+            src="/static/icons/categories.svg" class="flex gap-4 w-5 h-5" /><span
+            class="hidden md:block">Categories</span></a></li>
+      <li><a href="/insights" hx-on="click:styleActiveLink(this.pathname)"
+          class="flex gap-4 items-center py-2 px-4 hover:rounded-xl hover:bg-opacity-20 hover:bg-blue-300"><img
+            src="/static/icons/insights.svg" class="flex gap-4 w-5 h-5" /><span
+            class="hidden md:block">Insights</span></a></li>
+    </ul>
+  </nav>
+</div>

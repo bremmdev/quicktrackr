@@ -1,0 +1,9 @@
+<h1 class="font-medium text-2xl md:text-3xl text-blue-700">Categories</h1>
+<div class="flex flex-wrap gap-4 lg:gap-8 py-8">
+  {% for category in categories %}
+  <div class="flex gap-2 items-center justify-center bg-gradient-to-r from-indigo-700 to-blue-600 text-white font-medium py-3 px-6 rounded-lg">
+    <span>{{category}}</span>
+    <button hx-delete="/categories/{{category}}" hx-swap="delete transition:true swap:0.3s" hx-target="closest div" alt="delete category"><img src="/static/icons/delete.svg" class="w-6 h-6 inline-block hover:scale-105 transition-all" /></button>
+  </div>
+  {% endfor %}
+</div>
