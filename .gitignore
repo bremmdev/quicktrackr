@@ -1,0 +1,7 @@
+__pycache__/
+.pytest_cache/
+.env
+node_modules
+package.json
+package-lock.json
+tailwind.config.js
