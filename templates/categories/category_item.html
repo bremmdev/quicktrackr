@@ -1,0 +1,7 @@
+<div
+class="flex gap-2 items-center justify-center bg-gradient-to-r from-slate-800 to-slate-500 text-white font-medium py-2 px-4 sm:py-3 sm:px-5 rounded-full">
+<span>{{category.name}}</span>
+<button hx-delete="/categories/{{category.id}}" hx-swap="delete transition:true swap:0.3s" hx-target="closest div" hx-push-url="/categories"
+  alt="delete category"><img src="/static/icons/delete.svg"
+    class="w-6 h-6 inline-block hover:scale-105 transition-all" /></button>
+</div>
