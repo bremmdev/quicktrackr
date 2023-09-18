@@ -17,9 +17,6 @@ class Category:
         conn = db.get_connection()
         try:
             with conn:
-                if random.randint(0, 1) == 1:
-                    raise Exception("Something went wrong")
-
                 cursor = conn.cursor()
                 cursor.execute('''
                     SELECT * FROM category
