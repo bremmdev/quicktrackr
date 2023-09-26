@@ -1,26 +1,83 @@
-<div class="flex items-center"><h1 class="font-medium -translate-y-1 text-2xl md:text-4xl text-slate-700">Expenses</h1><a href="/expenses/new" hx-push-url="true" class="ml-auto text-white font-medium bg-blue-700 py-3 px-4 md:px-6 rounded-xl hover:bg-blue-600 transition-all">Add Expense</a></div>
-<ul class="py-8">
+<div class="flex items-center">
+  <h1 class="font-medium -translate-y-1 text-2xl md:text-4xl text-slate-700">
+    Expenses
+  </h1>
+  <a
+    href="/expenses/new"
+    hx-push-url="true"
+    hx-target="#slot"
+    class="ml-auto text-white font-medium bg-blue-700 py-3 px-4 md:px-6 rounded-xl hover:bg-blue-600 transition-all"
+    >Add Expense</a
+  >
+</div>
+
+<h2 class="my-2 font-medium">
+  {{ cnt }} {{ "expense" if cnt == 1 else "expenses" }} in total
+</h2>
+
+<form hx-get="/expenses" hx-trigger="keyup from:find #q delay:300ms, search from:find #q, change from:find #category" class="flex gap-2 my-4" hx-target="#slot" hx-push-url="true" >
+<input value="{{request.args.get('q') or ''}}" type="search" name="q" id="q" placeholder="Search expenses" class="w-full bg-blue-50 border border-slate-400 rounded-md py-2 px-3" />
+<select class="bg-blue-50 border border-slate-400 rounded-md py-2 px-3" name="category" id="category">
+  <option value="all" {% if request.args.get('category') == None %}selected{% endif %}>All categories</option>
+  {% for category in categories %}
+  <option value="{{category.name}}" {% if request.args.get('category') == category.name %}selected{% endif %}>{{category.name.capitalize()}}</option>
+  {% endfor %}
+</select>
+</form>
+
+<ul id="expenses-list" class="py-4">
   {% for expense in expenses %}
 
-  <li class="flex gap-2 sm:gap-4 lg:gap-8 justify-between items-center px-1 lg:px-5 py-4 even:bg-slate-100 odd:bg-slate-200">
-
+  <li
+    class="relative flex gap-2 sm:gap-4 lg:gap-8 justify-between items-center px-1 sm:px-2 lg:px-5 py-4 even:bg-slate-100 odd:bg-slate-200"
+  >
+    <input
+      hx-on="change:updateDeleteExpenses(event)"
+      type="checkbox"
+      name="selected-expense"
+      class="ml-1 mr-0 sm:-mr-1 lg:-mr-2 w-4 h-4"
+      aria-label="Select expense to delete"
+      value="{{expense.id}}"
+    />
     <div
-      class="w-20 sm:w-24 lg:w-32 shrink-0 text-center py-2 bg-gradient-to-r from-slate-800 to-slate-500 text-white font-bold">
+      class="w-20 sm:w-24 lg:w-32 shrink-0 text-center py-2 bg-gradient-to-r from-slate-800 to-slate-500 text-white font-bold"
+    >
       {{expense.date}}
     </div>
-    <div class="hidden md:block w-24 lg:w-32 shrink text-center bg-gradient-to-r from-cyan-800 to-cyan-600 text-white font-medium rounded-full py-2">
+    <div
+      class="hidden md:block w-24 lg:w-32 shrink text-center bg-gradient-to-r from-cyan-800 to-cyan-600 text-white font-medium rounded-full py-2"
+    >
       {{expense.category}}
     </div>
-    <div class="text-left flex-1 font-medium">
-      {{expense.title}}
-    </div>
-    <div class="w-12 md:w-24 text-right">
-      ${{expense.amount}}
-    </div>
-
+    <div class="text-left flex-1 font-medium">{{expense.title}}</div>
+    <div class="w-12 md:w-24 shrink-0 mr-1 text-right">${{expense.amount}}</div>
   </li>
-
 
   {% endfor %}
 </ul>
+{% if expenses|length > 0 %}
+
+<div id="actions" {% if oob %}hx-swap-oob="true"{% endif %}>
+  <button
+    disabled
+    id="delete-expenses-btn"
+    hx-delete="/expenses?q={{request.args.get('q')}}"
+    hx-indicator=".spinner"
+    hx-include="[name='selected-expense']"
+    hx-target="body"
+    class="flex gap-2 items-center text-white font-medium bg-blue-700 py-3 px-4 md:px-6 rounded-xl hover:bg-blue-600 transition-all disabled:opacity-50"
+  >
+    <span>Delete expenses</span><span class="spinner"></span>
+  </button>
+  <button {% if (page+1) * 20 >= cnt %}disabled{% endif %} hx-get="/expenses?q={{request.args.get('q') or ''}}&page={{ page + 1 }}"
+    class="flex w-fit mx-auto items-center gap-1 font-medium py-2 px-4 md:px-5
+    rounded-xl border-2 border-blue-700 text-blue-700 hover:bg-blue-50
+    transition-all my-4 disabled:opacity-50" id="load-more"
+    hx-target="#expenses-list" hx-select="ul > li, #action" hx-swap="beforeend"
+    >
+    <span class="shrink-0">Load More</span>
+  </button>
+</div>
+
+{% endif %}
 <div id="error" class="text-center font-bold text-red-500 my-2"></div>

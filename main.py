@@ -1,6 +1,7 @@
-from flask import Flask, render_template, render_template_string, request
+from flask import Flask, render_template, render_template_string, request, redirect
 from data import expenses
 from models.category import Category, CategoryExistsError, CategoryNotFoundError
+from models.expenses import Expense
 import sqlite3
 
 
@@ -14,14 +15,79 @@ def index():
 
     return render_template('index.html')
 
+# -------------------------
+# EXPENSES
+# -------------------------
+
 
 @app.route('/expenses')
 def expenses_route():
+    try:
+        q = request.args.get('q', '')
+        category_filter = request.args.get('category', '')
+        page = int(request.args.get('page', 0))
+        expenses, cnt = Expense.find_many(page, q, category_filter)
+        categories = Category.find_all()
+        oob = False if page == 0 else True
+        template = 'expenses/expenses_partial.html' if (
+            request.headers.get('Hx-Request')) else 'expenses.html'
+        return render_template(template, expenses=expenses, cnt=cnt, categories=categories, page=page, oob=oob)
+    except Exception as e:
+        if (request.headers.get('Hx-Request')):
+            return render_template('error/error_partial.html', title="Expenses", error=str(e))
 
-    if (request.headers.get('Hx-Request')):
-        return render_template('expenses/expenses_partial.html', expenses=expenses)
+        return render_template('error/error.html', title="Expenses", error=str(e)), 500
 
-    return render_template('expenses.html', expenses=expenses)
+
+@app.route('/expenses/new', methods=['GET'])
+def new_expense_form():
+    try:
+        categories = Category.find_all()
+        template = 'expenses/new_expense_partial.html' if (
+            request.headers.get('Hx-Request')) else 'new_expense.html'
+        return render_template(template, categories=categories, expense={}, errors={})
+    except Exception as e:
+        return str(e), 500
+
+
+@app.route('/expenses/new', methods=['POST'])
+def create_new_expense():
+    title = request.form['title']
+    amount = float(request.form['amount']) if request.form['amount'] else 0
+    date = request.form['date']
+    category = request.form['category']
+
+    try:
+        errors = Expense.validate(title, amount, date, category)
+        if not errors:
+            e = Expense(title, amount, date, category)
+            Expense.create(e)
+            return redirect('/expenses'), 303
+        else:
+            categories = Category.find_all()
+            e = {
+                "title": title,
+                "amount": amount,
+                "date": date,
+                "category": category
+            }
+            return render_template('expenses/new_expense_partial.html', categories=categories, errors=errors, expense=e)
+    except Exception as e:
+        return str(e), 500
+
+
+@app.route('/expenses', methods=['DELETE'])
+def delete_expenses():
+    ids = request.form.getlist('selected-expense')
+    q = request.args.get('q', '') 
+    try:
+        for id in ids:
+            Expense.delete(id)
+        expenses, cnt = Expense.find_many(0)
+        categories = Category.find_all()
+        return render_template('expenses.html', expenses=expenses, cnt=cnt, page=0, categories=categories, oob=False)
+    except Exception as e:
+        return str(e), 500
 
 
 # -------------------------
@@ -49,7 +115,6 @@ def new_category():
         return str(e), 400
 
     except Exception as e:
-        print('x')
         return str(e), 500
 
     return render_template('categories/category_item.html', category=c)

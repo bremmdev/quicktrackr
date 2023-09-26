@@ -8,7 +8,7 @@
 
   {% if not error %}
   <form hx-on="htmx:afterRequest:clearCategoryForm(event)" hx-post="categories" hx-target="this"
-    hx-swap="beforebegin transition:true">
+    hx-swap="beforebegin">
     <div
       class="w-52 flex gap-2 items-center justify-center bg-gradient-to-r from-slate-800 to-slate-500 text-white font-medium rounded-full pr-4 self-stretch">
       <input placeholder="Add category" type="text" name="name" id="name" required
