@@ -5,7 +5,7 @@ from models.category import Category
 import random
 
 DB_NAME = "quicktrackr.db"
-PER_PAGE = 20
+PER_PAGE = 10
 
 
 class Expense:
@@ -21,8 +21,6 @@ class Expense:
         db = DatabaseConnection(DB_NAME)
         conn = db.get_connection()
         offset = page * PER_PAGE
-     
-        print(category_filter)
         query = f'%{q}%' if q else '%'
         cat = f'%{category_filter}%' if category_filter != 'all' else '%'
         try:

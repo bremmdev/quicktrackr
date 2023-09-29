@@ -18,20 +18,17 @@ def index():
 # -------------------------
 # EXPENSES
 # -------------------------
-
-
 @app.route('/expenses')
 def expenses_route():
     try:
         q = request.args.get('q', '')
-        category_filter = request.args.get('category', '')
+        cat = request.args.get('category', 'all')
         page = int(request.args.get('page', 0))
-        expenses, cnt = Expense.find_many(page, q, category_filter)
+        expenses, cnt = Expense.find_many(page, q, cat)
         categories = Category.find_all()
-        oob = False if page == 0 else True
         template = 'expenses/expenses_partial.html' if (
             request.headers.get('Hx-Request')) else 'expenses.html'
-        return render_template(template, expenses=expenses, cnt=cnt, categories=categories, page=page, oob=oob)
+        return render_template(template, expenses=expenses, cnt=cnt, categories=categories, page=page)
     except Exception as e:
         if (request.headers.get('Hx-Request')):
             return render_template('error/error_partial.html', title="Expenses", error=str(e))
@@ -52,7 +49,7 @@ def new_expense_form():
 
 @app.route('/expenses/new', methods=['POST'])
 def create_new_expense():
-    title = request.form['title']
+    title = request.form['title'] 
     amount = float(request.form['amount']) if request.form['amount'] else 0
     date = request.form['date']
     category = request.form['category']
@@ -80,12 +77,13 @@ def create_new_expense():
 def delete_expenses():
     ids = request.form.getlist('selected-expense')
     q = request.args.get('q', '') 
+    cat = request.args.get('category', '')
     try:
         for id in ids:
             Expense.delete(id)
-        expenses, cnt = Expense.find_many(0)
+        expenses, cnt = Expense.find_many(0, q, cat)
         categories = Category.find_all()
-        return render_template('expenses.html', expenses=expenses, cnt=cnt, page=0, categories=categories, oob=False)
+        return render_template('expenses/expenses_partial.html', expenses=expenses, cnt=cnt, page=0, categories=categories)
     except Exception as e:
         return str(e), 500
 

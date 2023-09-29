@@ -1,24 +1,37 @@
 <h1 class="font-medium text-2xl md:text-4xl text-slate-700">Categories</h1>
 
-
 <div id="categories-list" class="flex flex-wrap gap-4 lg:gap-6 py-8">
-  {% for category in categories %}
-  {% include 'categories/category_item.html' %}
-  {% endfor %}
-
-  {% if not error %}
-  <form hx-on="htmx:afterRequest:clearCategoryForm(event)" hx-post="categories" hx-target="this"
-    hx-swap="beforebegin">
+  {% for category in categories %} {% include 'categories/category_item.html' %}
+  {% endfor %} {% if not error %}
+  <form
+    hx-on="htmx:afterRequest:clearCategoryForm(event)"
+    hx-post="categories"
+    hx-target="this"
+    hx-swap="beforebegin"
+  >
     <div
-      class="w-52 flex gap-2 items-center justify-center bg-gradient-to-r from-slate-800 to-slate-500 text-white font-medium rounded-full pr-4 self-stretch">
-      <input placeholder="Add category" type="text" name="name" id="name" required
-        class="bg-gradient-to-r from-slate-800 to-slate-500 rounded-full font-medium py-2 px-4 sm:py-3 sm:px-5 w-full h-10 sm:h-12" />
-      <button><img src="/static/icons/add.svg" alt="Add category"
-          class="w-8 h-8 inline-block hover:scale-105 transition-all" /></button>
+      class="w-52 flex gap-2 items-center justify-center bg-gradient-to-r from-slate-800 to-slate-500 text-white font-medium rounded-full pr-4 self-stretch"
+    >
+      <input
+        placeholder="Add category"
+        type="text"
+        name="name"
+        id="name"
+        required
+        class="bg-gradient-to-r from-slate-800 to-slate-500 rounded-full font-medium py-2 px-4 sm:py-3 sm:px-5 w-full h-10 sm:h-12"
+      />
+      <button>
+        <img
+          src="/static/icons/add.svg"
+          alt="Add category"
+          class="w-8 h-8 inline-block hover:scale-105 transition-all"
+        />
+      </button>
     </div>
   </form>
   {% endif %}
-
 </div>
 
-<div id="error" class="text-center font-bold text-red-500 my-2">{{ error }}</div>
+<div id="error" class="text-center font-bold text-red-500 my-2">
+  {{ error }}
+</div>
