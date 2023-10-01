@@ -1,0 +1,50 @@
+<div
+  class="flex items-center border-r border-r-slate-700 pr-2 sm:pr-4 lg:pr-6">
+<form class="flex flex-col sm:flex-row items-center gap-1">
+  <input
+    type="text"
+    name="budget"
+    id="budget"
+    value="{{budget}}"
+    autofocus
+    required
+    class="bg-blue-50 border text-sm md:text-base border-slate-400 rounded-md py-1 px-1 md:px-2 max-w-[3rem] sm:max-w-[4rem] md:max-w-[6rem] h-8"
+  />
+  <div>
+    <button
+      hx-patch="edit-budget"
+      hx-vals='{"_action": "save"}'
+      hx-include="[name='budget']"
+      hx-target="#stats"
+      hx-swap="outerHTML"
+      aria-label="confirm edit budget"
+      type="submit"
+      class="shrink-0"
+    >
+      <img
+        src="/static/icons/check.svg"
+        alt="confirm icon"
+        width="24px"
+        height="24x"
+        class="sm:h-8 sm:w-8 shrink-0"
+      />
+    </button>
+    <button
+      hx-patch="edit-budget"
+      hx-vals='{"_action": "cancel", "budget": {{budget}}}'
+      hx-target="#stats"
+      hx-swap="outerHTML"
+      type="button"
+      class="shrink-0"
+    >
+      <img
+        src="/static/icons/cancel.svg"
+        width="24px"
+        height="24px"
+        alt="cancel icon"
+        class="sm:h-8 sm:w-8 shrink-0"
+      />
+    </button>
+  </div>
+</form>
+</div>

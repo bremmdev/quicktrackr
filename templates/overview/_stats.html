@@ -1,0 +1,26 @@
+<div id="stats">
+  <h2 class="font-medium text-lg md:text-2xl text-slate-700 my-4">This month</h2>
+  {% if stats_error %}
+  <div id="stats-error">{{stats_error}}</div>
+  {% endif %}
+  <div class="flex flex-col lg:flex-row lg:gap-8 xl:gap-16 lg:items-start">
+    <div class="flex gap-2 sm:gap-4 lg:gap-6 text-base sm:text-xl md:text-2xl text-left mb-4 md:mb-8">
+      <div class="flex flex-col border-r border-r-slate-700 pr-2 sm:pr-4 lg:pr-6">
+        <span>Balance</span><span class="font-medium"><span>${{stats.balance}}</span>
+      </div>
+      <div class="flex flex-col border-r border-r-slate-700 pr-2 sm:pr-4 lg:pr-6">
+        <span>Budget</span><span class="flex gap-1"><span class="font-medium">${{stats.budget}}</span><button type="button"
+          class="px-[3px] md:px-1 shrink-0 bg-transparent rounded-full hover:bg-blue-200" aria-label="edit current budget" hx-get="/edit-budget"
+          hx-vals='{"budget": {{stats.budget}}}' hx-swap="outerHTML" hx-target="closest div"><img
+            src="/static/icons/edit.svg" width="20px" height="20px" alt="edit icon" class="md:w-6 md:h-6"/></button></span>
+      </div>
+      <div class="flex flex-col pr-2 sm:pr-4 lg:pr-6">
+        <span>Expenses</span><span class="font-medium">${{stats.total_expenses}}</span>
+      </div>
+    </div>
+    <div class="flex flex-col font-medium gap-3 flex-1">
+      <label class="text-lg md:text-xl" for="budget-meter">Budget spent</label>
+      <meter class="w-full" id="budget-meter" value="{{stats.total_expenses}}" min="0" max="{{stats.budget}}"></meter>
+    </div>
+  </div>
+</div>

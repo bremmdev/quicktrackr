@@ -7,7 +7,7 @@
 }
 
 a.active-link {
-  @apply rounded-xl bg-opacity-50 bg-blue-300 hover:bg-opacity-50;
+  @apply rounded-xl bg-opacity-50 bg-blue-300 hover:bg-opacity-50 transition-all;
 }
 
 div.htmx-swapping {
@@ -33,3 +33,27 @@ div.htmx-swapping {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+/* METER STYLES */
+meter{
+  background: #dbeafe;
+  border-radius:9999px;
+  height: 20px;
+}
+
+meter::-moz-meter-bar {
+  background: #60a5fa;
+  border-radius:9999px;
+  height: 20px;
+}
+
+::-webkit-meter-bar {
+  @apply rounded-full bg-blue-100 border-0 h-5;
+}
+
+::-webkit-meter-optimum-value{
+  @apply bg-blue-400 border-0;
+}
+
+
+

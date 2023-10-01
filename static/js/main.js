@@ -1,4 +1,5 @@
 function styleActiveLink(pathname) {
+  console.log('q')
   const path = pathname || window.location.pathname;
   const links = Array.from(document.querySelectorAll("#primary-nav a"));
 
@@ -13,6 +14,7 @@ function styleActiveLink(pathname) {
 
 window.onload = function () {
   styleActiveLink();
+  ctx = null
 };
 
 

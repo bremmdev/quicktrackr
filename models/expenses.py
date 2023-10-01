@@ -41,6 +41,21 @@ class Expense:
             raise e
 
     @classmethod
+    def find_by_month(cls, start_date, end_date):
+        db = DatabaseConnection(DB_NAME)
+        conn = db.get_connection()
+        try:
+            with conn:
+                cursor = conn.cursor()
+                cursor.execute('''
+          SELECT SUM(amount) FROM expense WHERE date BETWEEN ? AND ?
+        ''', (start_date, end_date))
+                total = cursor.fetchone()[0]
+                return total
+        except sqlite3.Error as e:
+            raise e
+
+    @classmethod
     def validate(cls, title, amount, date, category):
         errors = {}
         if not title or len(title) < 2:

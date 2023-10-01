@@ -1,0 +1,22 @@
+<ul id="expenses-list">
+  {% for expense in expenses %}
+
+  <li
+    class="relative flex gap-2 sm:gap-4 lg:gap-8 justify-between items-center px-1 sm:px-2 lg:px-5 py-4 even:bg-slate-100 odd:bg-slate-200">
+    <div
+      class="w-20 sm:w-24 lg:w-32 shrink-0 text-center py-2 bg-gradient-to-r from-slate-800 to-slate-500 text-white font-bold">
+      {{expense.date}}
+    </div>
+    <div
+      class="hidden md:block w-24 lg:w-32 shrink text-center bg-gradient-to-r from-cyan-800 to-cyan-600 text-white font-medium rounded-full py-2">
+      {{expense.category}}
+    </div>
+    <div class="text-left flex-1 font-medium">{{expense.title}}</div>
+    <div class="w-12 md:w-24 shrink-0 mr-1 text-right">${{expense.amount}}</div>
+  </li>
+
+  {% endfor %}
+</ul>
+<a href="/expenses" hx-push-url="true" hx-target="#slot" hx-swap="innerHTML show:no-scroll"
+  class="inline-block text-white font-medium bg-blue-700 py-3 px-4 md:px-6 rounded-xl hover:bg-blue-600 transition-all my-2 w-fit"
+  hx-on="click:styleActiveLink('/expenses')">All Expenses</a>

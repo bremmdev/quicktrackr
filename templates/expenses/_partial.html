@@ -11,9 +11,9 @@
   >
 </div>
 
-<h2 class="my-2 font-medium">
+<div class="my-2 font-medium">
   {{ cnt }} {{ "expense" if cnt == 1 else "expenses" }} in total
-</h2>
+<hdiv>
 
 <form hx-get="/expenses" hx-trigger="keyup from:find #q delay:300ms, search from:find #q, change from:find #category" class="flex gap-2 my-4" hx-target="#slot" hx-push-url="true" >
 <input value="{{request.args.get('q') or ''}}" type="search" name="q" id="q" placeholder="Search expenses" class="w-full bg-blue-50 border border-slate-400 rounded-md py-2 px-3" />
