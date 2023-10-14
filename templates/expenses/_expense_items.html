@@ -1,0 +1,26 @@
+<li
+  class="relative flex gap-2 sm:gap-4 lg:gap-8 justify-between items-center px-1 sm:px-2 lg:px-5 py-3 even:bg-slate-100 odd:bg-slate-200"
+>
+{% if not disable_delete %}
+  <input
+    hx-on="change:updateDeleteItems(event, 'expense')"
+    type="checkbox"
+    name="selected-expense"
+    class="ml-1 mr-0 sm:-mr-1 lg:-mr-2 w-4 h-4"
+    aria-label="Select expense to delete"
+    value="{{expense.id}}"
+  />
+{% endif %}
+  <div
+    class="w-20 sm:w-24 lg:w-32 shrink-0 text-center py-2 bg-gradient-to-r from-slate-800 to-slate-500 text-white font-bold"
+  >
+    {{expense.date}}
+  </div>
+  <div
+    class="hidden md:block w-24 lg:w-32 shrink text-center bg-blue-200 text-blue-700 font-medium rounded-full py-2"
+  >
+    {{expense.category}}
+  </div>
+  <div class="text-left flex-1 font-medium">{{expense.title}}</div>
+  <div class="w-12 md:w-24 shrink-0 mr-1 text-right">${{expense.amount}}</div>
+</li>

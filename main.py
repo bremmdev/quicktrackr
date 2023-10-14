@@ -39,7 +39,7 @@ def index():
 
         template = 'overview/_partial.html' if is_partial else 'index.html'
 
-        return render_template(template, expenses=latest_expenses, stats=stats, budget=budget, today=today)
+        return render_template(template, expenses=latest_expenses, stats=stats, budget=budget, today=today, disable_delete=True)
     except Exception as e:
         if (request.headers.get('Hx-Request')):
             return render_template('error/_partial.html', title="Overview", error=str(e))
