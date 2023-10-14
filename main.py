@@ -1,5 +1,4 @@
 from flask import Flask, render_template, render_template_string, request, redirect
-from data import expenses
 from models.category import Category, CategoryExistsError, CategoryNotFoundError
 from models.expenses import Expense
 from models.budget import Budget
