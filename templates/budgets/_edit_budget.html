@@ -1,0 +1,50 @@
+<div class="flex ml-auto">
+  <form class="flex items-center gap-1">
+    <input
+      type="text"
+      name="budget"
+      id="budget"
+      value="{{amount}}"
+      autofocus
+      required
+      class="bg-transparent px-1 text-sm md:text-base max-w-[3rem] sm:max-w-[4rem] md:max-w-[6rem] h-8 border-b-2 border-b-blue-300 outline-none focus:outline-none focus:border-b-blue-500"
+    />
+    <input type="hidden" name="budget_id" value="{{id}}" />
+    <div class="flex items-center gap-1">
+      <button
+        hx-patch="budgets/edit"
+        hx-vals='{"_action": "save"}'
+        hx-include="[name='budget'], [name='budget_id']"
+        hx-target="closest .budget-item"
+        hx-swap="outerHTML"
+        aria-label="confirm edit budget"
+        type="submit"
+        class="shrink-0"
+      >
+        <img
+          src="/static/icons/check.svg"
+          alt="confirm icon"
+          width="24px"
+          height="24x"
+          class="sm:h-8 sm:w-8 shrink-0 fill-green-500"
+        />
+      </button>
+      <button
+        hx-patch="budgets/edit"
+        hx-vals='{"_action": "cancel"}'
+        hx-target="closest .budget-item"
+        hx-swap="outerHTML"
+        type="button"
+        class="shrink-0"
+      >
+        <img
+          src="/static/icons/cancel.svg"
+          width="24px"
+          height="24px"
+          alt="cancel icon"
+          class="sm:h-8 sm:w-8 shrink-0"
+        />
+      </button>
+    </div>
+  </form>
+</div>

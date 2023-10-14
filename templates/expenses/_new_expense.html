@@ -59,7 +59,6 @@
       class="bg-blue-50 border border-slate-400 rounded-md py-2 px-3"
       name="category"
       id="category"
-      value="{{expense.category}}"
       required
     >
       {% for category in categories %}
@@ -75,7 +74,7 @@
     hx-indicator=".spinner"
     hx-target="#slot"
     hx-push-url="true"
-    class="flex gap-2 items-center text-white font-medium bg-blue-700 py-3 px-4 md:px-6 rounded-xl hover:bg-blue-600 transition-all disabled:opacity-50 my-6"
+    class="flex gap-2 items-center text-white font-medium bg-blue-700 py-3 px-4 md:px-6 rounded-xl hover:bg-blue-600 transition-all disabled:opacity-50 my-6 mx-auto"
   >
     <span>Add expense</span><span class="spinner"></span>
   </button>

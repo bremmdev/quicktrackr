@@ -1,0 +1,44 @@
+<a href="/budgets" hx-push-url="true" hx-target="#slot" hx-swap="innerHTML show:no-scroll"
+  class="flex w-fit items-center gap-1 font-medium py-2 px-4 md:px-5 rounded-xl border-2 border-blue-700 text-blue-700 hover:bg-blue-50 transition-all"><img
+    class="w-4 md:w-6" src="/static/icons/back.svg" /><span class="shrink-0">Back</span></a>
+
+<h1 class="font-medium text-center text-2xl md:text-4xl text-slate-700">
+  Add Budget
+</h1>
+
+<form class="block max-w-lg w-11/12 mx-auto">
+  <div class="flex flex-col gap-2 my-4 mb-0">
+    <fieldset class="flex gap-2 justify-between">
+      <legend class="font-medium my-2">Start month and year</legend>
+
+      <select class="bg-blue-50 border border-slate-400 rounded-md py-2 px-3 flex-1" name="month" id="month">
+        {% for month in months %}
+        <option value="{{month.number}}" {% if month.number==curr_month %}selected{% endif %}>{{month.name}}</option>
+        {% endfor %}
+      </select>
+
+      <input type="number" class="bg-blue-50 border border-slate-400 rounded-md py-2 w-20 pl-2 sm:w-24 text-center"
+        name="year" id="year" value="{{budget.year or curr_year}}" step="1" />
+    </fieldset>
+    <div class="flex gap-2 items-center">
+      <label class="font-medium" for="repeat">Repeat for rest of the year</label>
+      <input type="checkbox" name="repeat" id="repeat" {% if repeat %}checked{% endif %} />
+    </div>
+    <div class="font-bold text-red-500">{{errors["month"] }}</div>
+    <div class="font-bold text-red-500">{{errors["year"] }}</div>
+  </div>
+
+  <div class="flex flex-col gap-2 my-2">
+    <label class="font-medium" for="amount">Amount</label>
+    <input class="bg-blue-50 border border-slate-400 rounded-md py-2 px-3" type="number" name="amount" id="amount"
+      step="0.01" placeholder="Amount" value="{{budget.amount}}" required />
+    <div class="font-bold text-red-500">{{errors["amount"] }}</div>
+  </div>
+
+  <button hx-post="/budgets/new" hx-indicator=".spinner" hx-include="[name='repeat']" hx-target="#slot"
+    hx-push-url="true"
+    class="flex gap-2 items-center text-white font-medium bg-blue-700 py-3 px-4 md:px-6 rounded-xl hover:bg-blue-600 transition-all disabled:opacity-50 my-6 mx-auto">
+    <span>Add budget</span><span class="spinner"></span>
+  </button>
+</form>
+<div id="error" class="text-center font-bold text-red-500 my-2"></div>

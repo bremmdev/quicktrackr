@@ -5,16 +5,17 @@
     type="text"
     name="budget"
     id="budget"
-    value="{{budget}}"
+    value="{{amount}}"
     autofocus
     required
     class="bg-blue-50 border text-sm md:text-base border-slate-400 rounded-md py-1 px-1 md:px-2 max-w-[3rem] sm:max-w-[4rem] md:max-w-[6rem] h-8"
   />
-  <div>
+  <input type="hidden" name="budget_id" value="{{id}}" />
+  <div class="flex items-center">
     <button
-      hx-patch="edit-budget"
+      hx-patch="budgets/current/edit"
       hx-vals='{"_action": "save"}'
-      hx-include="[name='budget']"
+      hx-include="[name='budget'], [name='budget_id']"
       hx-target="#stats"
       hx-swap="outerHTML"
       aria-label="confirm edit budget"
@@ -30,10 +31,9 @@
       />
     </button>
     <button
-      hx-patch="edit-budget"
-      hx-vals='{"_action": "cancel", "budget": {{budget}}}'
-      hx-target="#stats"
-      hx-swap="outerHTML"
+      hx-patch="budgets/current/edit"
+      hx-vals='{"_action": "cancel"}'
+      hx-target="#slot"
       type="button"
       class="shrink-0"
     >

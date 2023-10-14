@@ -1,0 +1,39 @@
+<div class="flex items-center">
+  <h1 class="font-medium -translate-y-1 text-2xl md:text-4xl text-slate-700">
+    Budgets
+  </h1>
+  <a
+    href="/budgets/new"
+    hx-push-url="true"
+    hx-target="#slot"
+    class="ml-auto text-white font-medium bg-blue-700 py-3 px-4 md:px-6 rounded-xl hover:bg-blue-600 transition-all"
+    >Add Budget</a
+  >
+</div>
+
+<ul id="budget-list" class="py-4 my-4">
+  {% for budget in budgets %}
+
+  {% include 'budgets/_budget_item.html' %}
+
+  {% endfor %}
+</ul>
+
+<div id="actions">
+  {% if budgets|length > 0 %}
+  <button
+    disabled
+    id="delete-budgets-btn"
+    hx-delete="/budgets"
+    hx-indicator=".spinner"
+    hx-include="[name='selected-budget']"
+    hx-target="#slot"
+    class="flex gap-2 items-center text-white font-medium bg-blue-700 py-3 px-4 md:px-6 rounded-xl hover:bg-blue-600 transition-all disabled:opacity-50"
+  >
+    <span>Delete budgets</span><span class="spinner"></span>
+  </button>
+
+  {% endif %}
+</div>
+
+<div id="error" class="text-center font-bold text-red-500 my-2"></div>

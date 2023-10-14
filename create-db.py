@@ -413,7 +413,7 @@ conn = sqlite3.connect("quicktrackr.db", )
 # Create a cursor object
 cursor = conn.cursor()
 
-# Define a table to store the contacts
+# Define tables
 cursor.execute('''
     CREATE TABLE IF NOT EXISTS category (
         id TEXT PRIMARY KEY,
@@ -431,6 +431,15 @@ cursor.execute('''
         FOREIGN KEY (categoryId) REFERENCES category(id) on delete restrict)
         ''')
 
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS budget (
+        id TEXT PRIMARY KEY,
+        month INTEGER,
+        month_name TEXT,
+        year INTEGER,
+        amount REAL
+        )
+''')
 
 # Seed the categories table
 for category in categories:

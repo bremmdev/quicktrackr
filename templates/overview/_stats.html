@@ -1,5 +1,8 @@
 <div id="stats">
   <h2 class="font-medium text-lg md:text-2xl text-slate-700 my-4">This month</h2>
+  {% if not budget.id %}
+  <div class="w-fit bg-rose-200 p-2 mb-4 font-medium rounded-lg">You do not have a budget for this month. Click <a class="font-bold border-b-2 border-b-black" hx-target="#slot" hx-boost="true" hx-push-url="true" href="/budgets/new">here</a> to create one</div>
+  {% endif %}
   {% if stats_error %}
   <div id="stats-error">{{stats_error}}</div>
   {% endif %}
@@ -8,12 +11,19 @@
       <div class="flex flex-col border-r border-r-slate-700 pr-2 sm:pr-4 lg:pr-6">
         <span>Balance</span><span class="font-medium"><span>${{stats.balance}}</span>
       </div>
+
       <div class="flex flex-col border-r border-r-slate-700 pr-2 sm:pr-4 lg:pr-6">
-        <span>Budget</span><span class="flex gap-1"><span class="font-medium">${{stats.budget}}</span><button type="button"
-          class="px-[3px] md:px-1 shrink-0 bg-transparent rounded-full hover:bg-blue-200" aria-label="edit current budget" hx-get="/edit-budget"
-          hx-vals='{"budget": {{stats.budget}}}' hx-swap="outerHTML" hx-target="closest div"><img
-            src="/static/icons/edit.svg" width="20px" height="20px" alt="edit icon" class="md:w-6 md:h-6"/></button></span>
+        <span>Budget</span><span class="flex gap-1"><span class="font-medium">${{stats.budget}}</span>
+          {% if budget.id %}
+          <button type="button" class="px-[3px] md:px-1 shrink-0 bg-transparent rounded-full hover:bg-blue-200"
+            aria-label="edit current budget" hx-get="/budgets/current/edit"
+            hx-vals='{"amount": {{budget.amount}}, "id": "{{budget.id}}"}' hx-swap="outerHTML"
+            hx-target="closest div"><img src="/static/icons/edit.svg" width="20px" height="20px" alt="edit icon"
+              class="md:w-6 md:h-6" /></button>
+          {% endif %}
+        </span>
       </div>
+
       <div class="flex flex-col pr-2 sm:pr-4 lg:pr-6">
         <span>Expenses</span><span class="font-medium">${{stats.total_expenses}}</span>
       </div>

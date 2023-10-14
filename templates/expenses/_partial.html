@@ -29,10 +29,10 @@
   {% for expense in expenses %}
 
   <li
-    class="relative flex gap-2 sm:gap-4 lg:gap-8 justify-between items-center px-1 sm:px-2 lg:px-5 py-4 even:bg-slate-100 odd:bg-slate-200"
+    class="relative flex gap-2 sm:gap-4 lg:gap-8 justify-between items-center px-1 sm:px-2 lg:px-5 py-3 even:bg-slate-100 odd:bg-slate-200"
   >
     <input
-      hx-on="change:updateDeleteExpenses(event)"
+      hx-on="change:updateDeleteItems(event, 'expense')"
       type="checkbox"
       name="selected-expense"
       class="ml-1 mr-0 sm:-mr-1 lg:-mr-2 w-4 h-4"
@@ -62,7 +62,7 @@
   <button
     disabled
     id="delete-expenses-btn"
-    hx-delete="/expenses?q={{request.args.get('q')}}&category={{request.args.get('category') or 'all'}}"
+    hx-delete="/expenses?q={{request.args.get('q') or ''}}&category={{request.args.get('category') or 'all'}}"
     hx-indicator=".spinner"
     hx-include="[name='selected-expense']"
     hx-target="#slot"

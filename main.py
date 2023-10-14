@@ -2,8 +2,10 @@ from flask import Flask, render_template, render_template_string, request, redir
 from data import expenses
 from models.category import Category, CategoryExistsError, CategoryNotFoundError
 from models.expenses import Expense
+from models.budget import Budget
+from models.datehelper import DateHelper
 import sqlite3
-from date_helpers import get_today, get_month_range
+import datetime
 
 
 app = Flask(__name__)
@@ -17,18 +19,20 @@ def index():
     # Get the 5 most recent expenses
     try:
         latest_expenses = Expense.find_many(0, '', 'all')[0][:5]
-        first_day, last_day = get_month_range()
-        today = get_today()
+        first_day, last_day = DateHelper.month_range()
+        today = DateHelper.today()
 
         # total expenses for this month
         total_expenses = Expense.find_by_month(first_day, last_day)
 
-        # TODO get budget from db
-        budget = 5000
-        balance = budget - total_expenses
+        # get current budget
+        curr_month, curr_year = DateHelper.current_month_year()
+        budget = Budget.find_by_month_year(curr_month, curr_year)
+
+        balance = budget['amount'] - total_expenses
         stats = {
             "total_expenses": f"{total_expenses:.2f}",
-            "budget": f"{budget:.2f}",
+            "budget": f"{budget['amount']:.2f}",
             "balance": f"{balance:.2f}"
         }
 
@@ -36,45 +40,12 @@ def index():
 
         template = 'overview/_partial.html' if is_partial else 'index.html'
 
-        return render_template(template, expenses=latest_expenses, stats=stats, today=today)
+        return render_template(template, expenses=latest_expenses, stats=stats, budget=budget, today=today)
     except Exception as e:
         if (request.headers.get('Hx-Request')):
             return render_template('error/_partial.html', title="Overview", error=str(e))
 
         return render_template('error/error.html', title="Overview", error=str(e)), 500
-
-
-@app.route('/edit-budget', methods=['GET'])
-def edit_budget():
-    budget = request.args.get('budget')
-    return render_template('overview/_edit_budget.html', budget=budget)
-
-
-@app.route('/edit-budget', methods=['PATCH'])
-def update_budget():
-    # hold current budget for cancel, holds new budget for save
-    try:
-        budget = float(request.form['budget'])
-        _action = request.form['_action']
-
-        # TODO update budget
-        # if _action == 'save':
-
-        first_day, last_day = get_month_range()
-
-        # total expenses for this month
-        total_expenses = Expense.find_by_month(first_day, last_day)
-
-        balance = budget - total_expenses
-        stats = {
-            "total_expenses": f"{total_expenses:.2f}",
-            "budget": f"{budget:.2f}",
-            "balance": f"{balance:.2f}"
-        }
-
-        return render_template('overview/_stats.html', stats=stats)
-    except ValueError:
-        return 'Invalid budget', 400
 
 
 # -------------------------
@@ -149,10 +120,171 @@ def delete_expenses():
     except Exception as e:
         return str(e), 500
 
+# -------------------------
+# BUDGETS
+# -------------------------
+
+
+@app.route('/budgets')
+def budgets_route():
+    try:
+        budgets = Budget.find_all()
+        template = 'budgets/_partial.html' if (
+            request.headers.get('Hx-Request')) else 'budgets.html'
+        return render_template(template, budgets=budgets)
+    except Exception as e:
+        if (request.headers.get('Hx-Request')):
+            return render_template('error/_partial.html', title="Budgets", error=str(e)) 
+
+        return render_template('error/error.html', title="Budgets", error=str(e)), 500
+
+
+@app.route('/budgets/new', methods=['GET'])
+def new_budget_form():
+    try:
+        months = DateHelper.months_in_year()
+        current_month, current_year = DateHelper.current_month_year()
+        template = 'budgets/_new_budget.html' if (
+            request.headers.get('Hx-Request')) else 'new_budget.html'
+        return render_template(template, months=months, curr_year=current_year, curr_month=current_month, budget={}, errors={})
+    except Exception as e:
+        return str(e), 500
+
+
+@app.route('/budgets/new', methods=['POST'])
+def create_new_budget():
+    try:
+        month = int(request.form['month']) if request.form['month'] else 0
+        year = int(request.form['year']) if request.form['year'] else 0
+        # check if repeat is checked
+        repeat = request.form.get('repeat', False)
+        amount = float(request.form['amount']) if request.form['amount'] else 0
+
+        # determine which months to create budget for
+        months = [month]
+        if repeat:
+            months = list(range(month, 13))
+    
+    except ValueError:
+        return 'Invalid input', 400
+
+    try:
+        errors = Budget.validate(month, year, amount)
+        if not errors: 
+            for m in months:
+                existing_budget = Budget.find_by_month_year(m, year)
+                if existing_budget and existing_budget['id'] != '':
+                    Budget.update(existing_budget['id'], amount)
+                else:
+                    b = Budget(m, year, amount)
+                    Budget.create(b)
+
+            return redirect('/budgets'), 303
+
+        # if there are errors, return to the form with the errors
+        months = DateHelper.months_in_year()
+        current_month, current_year = DateHelper.current_month_year()
+        budget = {
+            "month": month,
+            "year": year,
+            "amount": amount
+        }
+        return render_template('budgets/_new_budget.html', months=months, curr_year=current_year, curr_month=current_month, budget=budget, errors=errors, repeat=repeat)
+    except Exception as e:
+        return str(e), 500
+
+
+@app.route('/budgets', methods=['DELETE'])
+def delete_budgets():
+    ids = request.form.getlist('selected-budget')
+    try:
+        for id in ids:
+            Budget.delete(id)
+        budgets = Budget.find_all()
+        return render_template('budgets/_partial.html', budgets=budgets)
+    except Exception as e:
+        return str(e), 500
+
+
+@app.route('/budgets/current/edit', methods=['GET'])
+def edit_current_budget():
+    amount = request.args.get('amount', 0)
+    id = request.args.get('id', '')
+
+    return render_template('budgets/_edit_current_budget.html', amount=amount, id=id)
+
+
+@app.route('/budgets/current/edit', methods=['PATCH'])
+def update_current_budget():
+    try:
+        _action = request.form['_action']
+
+        # cancel button, so just return
+        if _action == 'cancel':
+            return redirect('/'), 303
+
+        budget_amount = float(request.form['budget'])
+        error = Budget.validate_new_budget(budget_amount)
+        if error:
+            return error, 400
+
+        #update budget
+        id = request.form['budget_id']
+        new_budget = Budget.update(id, budget_amount)
+
+        first_day, last_day = DateHelper.month_range()
+
+        # total expenses for this month
+        total_expenses = Expense.find_by_month(first_day, last_day)
+        balance = budget_amount - total_expenses
+
+        stats = {
+            "total_expenses": f"{total_expenses:.2f}",
+            "budget": f"{budget_amount :.2f}",
+            "balance": f"{balance:.2f}"
+        }
+
+        return render_template('overview/_stats.html', stats=stats, budget=new_budget)
+    except ValueError:
+        return 'Invalid budget', 400
+
+@app.route('/budgets/edit', methods=['GET'])
+def edit_budget():
+    amount = request.args.get('amount', 0)
+    id = request.args.get('id', '')
+
+    return render_template('budgets/_edit_budget.html', amount=amount, id=id)
+
+@app.route('/budgets/edit', methods=['PATCH'])
+def update_budget():
+    try:
+        _action = request.form['_action']
+        id = request.form['budget_id']
+
+        # cancel button, so just return
+        if _action == 'cancel':
+            existing_budget = Budget.find_by_id(id)
+            return render_template('budgets/_budget_item.html', budget=existing_budget)
+
+        budget_amount = float(request.form['budget'])
+        error = Budget.validate_new_budget(budget_amount)
+        if error:
+            return error, 400
+
+        #update budget
+        id = request.form['budget_id']
+        new_budget = Budget.update(id, budget_amount)
+
+        return render_template('budgets/_budget_item.html', budget=new_budget)
+
+    except ValueError:
+        return 'Invalid budget', 400
 
 # -------------------------
 # CATEGORIES
 # -------------------------
+
+
 @app.route('/categories')
 def categories_route():
     try:
