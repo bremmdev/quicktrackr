@@ -18,7 +18,6 @@ function clearCategoryForm(event) {
 }
 
 /**********EXPENSES ***********/
-
 //handle bulk delete expenses, takes a type (expense or budget)
 function updateDeleteItems(event, type) {
   cnt = Array.from(

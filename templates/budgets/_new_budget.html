@@ -6,7 +6,19 @@
   Add Budget
 </h1>
 
-<form class="block max-w-lg w-11/12 mx-auto">
+<dialog id="confirmation-modal" class="max-w-[90%] mx-auto">
+  <div class="flex flex-col gap-4 p-6 md:p-8 pb-8 md:pb-12">
+      <h2 class="font-medium text-base md:text-lg">Are you sure?</h2>
+  <p>This action overrides any existing budgets for the selected month(s).</p>
+  </div>
+  <div class="font-medium flex gap-4 bg-slate-100 p-4 justify-end w-full">
+    <button id="cancel-btn" class="bg-white text-slate-950 border-2 border-slate-950 px-4 py-2 rounded-md hover:bg-slate-100 transition-all focus:outline-blue-500 focus:outline-offset-4" hx-on:click="document.getElementById('confirmation-modal').close()">Cancel</button>
+    <button hx-on:click="document.getElementById('confirmation-modal').close()"  id="confirm-btn" hx-post="/budgets/new" hx-include="input, select" hx-target="#slot" hx-push-url="true"
+     class="bg-slate-950 border-2 border-transparent text-white px-4 py-2 rounded-md hover:bg-slate-700 transition-all focus-visible:outline-blue-500 focus-visible:outline-offset-4 focus:outline-blue-500 focus:outline-offset-4">Confirm</button> 
+  </div>
+</dialog>
+
+<form id="add-budget-form" class="block max-w-lg w-11/12 mx-auto">
   <div class="flex flex-col gap-2 my-4 mb-0">
     <fieldset class="flex gap-2 justify-between">
       <legend class="font-medium my-2">Start month and year</legend>
@@ -35,8 +47,7 @@
     <div class="font-bold text-red-500">{{errors["amount"] }}</div>
   </div>
 
-  <button hx-post="/budgets/new" hx-indicator=".spinner" hx-include="[name='repeat']" hx-target="#slot"
-    hx-push-url="true"
+  <button id="add-budgets-btn" hx-on:click="event.preventDefault();document.getElementById('confirmation-modal').showModal();" 
     class="flex gap-2 items-center text-white font-medium bg-blue-700 py-3 px-4 md:px-6 rounded-xl hover:bg-blue-600 transition-all disabled:opacity-50 my-6 mx-auto">
     <span>Add budget</span><span class="spinner"></span>
   </button>
