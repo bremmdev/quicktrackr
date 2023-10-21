@@ -1,0 +1,118 @@
+<div class="flex flex-col items-center lg:flex-row gap-6 xl:gap-8 my-6">
+  <section class="my-4 flex flex-col gap-6 w-full lg:w-7/12">
+    <h2 class="hidden sm:block font-medium text-lg md:text-2xl text-slate-700">
+      Expenses per month
+    </h2>
+    <div class="hidden sm:block relative w-full max-w-4xl mx-auto h-96">
+      <canvas id="barChart"></canvas>
+    </div>
+  </section>
+
+  <section
+    class="my-4 flex flex-col gap-6 w-full lg:w-5/12 lg:text-center items-center"
+  >
+    <h2 class="hidden sm:block font-medium text-lg md:text-2xl text-slate-700">
+      Expenses per category
+    </h2>
+    <div
+      class="hidden sm:flex relative w-full max-w-4xl mx-auto h-96 justify-center"
+    >
+      <canvas id="doughnutChart"></canvas>
+    </div>
+  </section>
+</div>
+
+<script>
+
+  expensesList = {{ data.expenses.total_per_month }};
+  categoryLabels = {{ data.categories.labels | tojson }};
+  categoryAmounts = {{ data.categories.amounts }};
+
+  if (typeof barChart === 'undefined') {
+    barChart = createBarChart(expensesList);
+    doughnutChart = createDoughnutChart(categoryLabels, categoryAmounts);
+  } else {
+    doughnutChart = createDoughnutChart(categoryLabels, categoryAmounts);
+    barChart = createBarChart(expensesList);
+  }
+
+  function createBarChart(data) {
+    return new Chart(document.getElementById("barChart"), {
+      type: "bar",
+      data: {
+        labels: [
+          "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+        ],
+        datasets: [
+          {
+            label: "Expenses per month",
+            data: data,
+            borderWidth: 0,
+            backgroundColor: '#93c5fd',
+            borderRadius: 2
+          },
+        ],
+      },
+      options: {
+        plugins: {
+          legend: {
+            display: false,
+          },
+        },
+        scales: {
+
+          y: {
+            ticks: {
+              color: '#0f172a',
+              font: {
+                size: 14
+              }
+            },
+            beginAtZero: true,
+            grid: {
+              color: '#bfdbfe'
+            },
+          },
+          x: {
+            ticks: {
+              color: '#0f172a',
+              font: {
+                size: 14
+              }
+            },
+            grid: {
+              color: '#bfdbfe'
+            }
+          }
+        },
+        maintainAspectRatio: false,
+      },
+    });
+  }
+
+  function createDoughnutChart(labels, data) {
+    return new Chart(document.getElementById("doughnutChart"), {
+      type: "doughnut",
+      data: {
+        labels: labels,
+        datasets: [{
+          data: data,
+          backgroundColor: ["#93c5fd", "#60a5fa", "#a78bfa", "#8b5cf6", "#94a3b8", "#64748b", "#5eead4", "#2dd4bf", "#fecdd3", "#fda4af"].slice(0, data.length),
+          hoverOffset: 4
+      }]
+    },
+    options: {
+      plugins: {
+        legend: {
+          labels: {
+            usePointStyle: true,
+                  font: {
+                      size: 14
+                  }
+              }
+        },
+      },
+    }
+    });
+  }
+</script>

@@ -55,6 +55,48 @@ class Expense:
         except sqlite3.Error as e:
             raise e
 
+    def total_per_month(year):
+        start_date = f'{year}-01-01'
+        end_date = f'{year}-12-31'
+        db = DatabaseConnection(DB_NAME)
+        conn = db.get_connection()
+        try:
+            with conn:
+                cursor = conn.cursor()
+                cursor.execute('''
+          SELECT SUM(amount), strftime('%m', date), COUNT(*) FROM expense WHERE date >= ? AND date < ? GROUP BY strftime('%m', date) 
+        ''', (start_date, end_date, ))
+                rows = cursor.fetchall()
+                totals = [(row[0], int(row[1])) for row in rows]
+                count = sum([row[2] for row in rows])
+
+                cursor.execute('''
+          SELECT MAX(amount) FROM expense WHERE date >= ? AND date < ?
+        ''', (start_date, end_date, ))
+                max = cursor.fetchone()[0]
+                return totals, count, max
+
+        except sqlite3.Error as e:
+            raise e
+    
+    def expenses_per_category(year):
+        start_date = f'{year}-01-01'
+        end_date = f'{year}-12-31'
+        db = DatabaseConnection(DB_NAME)
+        conn = db.get_connection()
+        try:
+            with conn:
+                cursor = conn.cursor()
+                cursor.execute('''
+          SELECT SUM(amount), category.name FROM expense JOIN category ON expense.categoryId = category.id WHERE date >= ? AND date < ? GROUP BY category.name
+        ''', (start_date, end_date, ))
+                rows = cursor.fetchall()
+                totals = [(row[0], row[1]) for row in rows]
+                return totals
+
+        except sqlite3.Error as e:
+            raise e
+
     @classmethod
     def validate(cls, title, amount, date, category):
         errors = {}

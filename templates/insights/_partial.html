@@ -1,0 +1,47 @@
+<div class="flex flex-col gap-2 md:gap-4">
+  <div class="flex gap-8 justify-between lg:justify-start items-center">
+    <h1 class="font-medium text-2xl md:text-4xl text-slate-700">Insights</h1>
+
+    <div id="year-toggle"
+      class="flex w-fit items-center font-medium rounded-lg gap-1 border-2 border-slate-700 text-slate-700 translate-y-1 disabled:opacity-50"
+    >
+      <button
+        {% if curr_year == selected_year + 1 %}disabled{% endif %}
+        class="py-2 px-4 md:px-5 hover:bg-slate-200 transition-all rounded-lg"
+        hx-get="/insights?year={{curr_year - 1}}"
+        hx-target="#slot"
+        hx-push-url="true"
+      >
+        {{curr_year - 1}}
+      </button>
+      <button
+        {% if curr_year == selected_year %}disabled{% endif %}
+        class="py-2 px-4 md:px-5 hover:bg-slate-200 transition-all rounded-lg"
+        hx-get="/insights?year={{curr_year}}"
+        hx-target="#slot"
+        hx-push-url="true"
+      >
+        {{curr_year }}
+      </button>
+    </div>
+  </div>
+
+  <div
+    id="error"
+    class="text-center font-bold text-red-500 translate-y-4"
+  ></div>
+
+  {% include 'insights/_stats.html' %}
+  {% if data.expenses.count > 0 %}  
+  {% include 'insights/_charts.html' %}
+  {% endif %}
+</div>
+
+<script>
+  buttons = Array.from(document.querySelectorAll('#year-toggle > button'));
+  selectedYear = {{selected_year}};
+  selectedButton = buttons.find((button) => button.innerText.trim() == selectedYear);
+  if (selectedButton) {
+    selectedButton.classList.add('bg-slate-200');
+  }
+</script>

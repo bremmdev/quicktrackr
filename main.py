@@ -133,7 +133,7 @@ def budgets_route():
         return render_template(template, budgets=budgets)
     except Exception as e:
         if (request.headers.get('Hx-Request')):
-            return render_template('error/_partial.html', title="Budgets", error=str(e)) 
+            return render_template('error/_partial.html', title="Budgets", error=str(e))
 
         return render_template('error/error.html', title="Budgets", error=str(e)), 500
 
@@ -163,13 +163,13 @@ def create_new_budget():
         months = [month]
         if repeat:
             months = list(range(month, 13))
-    
+
     except ValueError:
         return 'Invalid input', 400
 
     try:
         errors = Budget.validate(month, year, amount)
-        if not errors: 
+        if not errors:
             for m in months:
                 existing_budget = Budget.find_by_month_year(m, year)
                 if existing_budget and existing_budget['id'] != '':
@@ -227,7 +227,7 @@ def update_current_budget():
         if error:
             return error, 400
 
-        #update budget
+        # update budget
         id = request.form['budget_id']
         new_budget = Budget.update(id, budget_amount)
 
@@ -247,12 +247,14 @@ def update_current_budget():
     except ValueError:
         return 'Invalid budget', 400
 
+
 @app.route('/budgets/edit', methods=['GET'])
 def edit_budget():
     amount = request.args.get('amount', 0)
     id = request.args.get('id', '')
 
     return render_template('budgets/_edit_budget.html', amount=amount, id=id)
+
 
 @app.route('/budgets/edit', methods=['PATCH'])
 def update_budget():
@@ -270,7 +272,7 @@ def update_budget():
         if error:
             return error, 400
 
-        #update budget
+        # update budget
         id = request.form['budget_id']
         new_budget = Budget.update(id, budget_amount)
 
@@ -320,6 +322,65 @@ def delete_category(id):
         return 'Cannot delete a category that has expenses', 400
     except CategoryNotFoundError as e:
         return str(e), 400
+
+# -------------------------
+# INSIGHTS
+# -------------------------
+
+
+@app.route('/insights')
+def insights_route():
+
+    curr_year = datetime.datetime.now().year
+
+    try:
+        year = int(request.args.get('year', curr_year))
+
+        if year != curr_year and year != curr_year - 1:
+            raise ValueError(f"Invalid year {year}")
+    except ValueError as e:
+        if 'year' not in str(e):
+            e = f"Invalid year"
+        if (request.headers.get('Hx-Request')):
+            return render_template('error/_partial.html', title="Insights", error=str(e))
+        return render_template('error/error.html', title="Insights", error=str(e)), 500
+
+    try:
+        months = DateHelper.months_in_year()
+
+        totals, cnt, highest = Expense.total_per_month(year)
+        # Create a dictionary to map months to expenses
+        expense_dict = {month: expense for expense, month in totals}
+
+        # Generate a new list with 0 for months without expenses
+        expenses_list = [round(expense_dict.get(month, 0), 2)
+                         for month in range(1, 13)]
+
+        totals_per_category = Expense.expenses_per_category(year)
+
+        insights_data = {
+            "expenses": {
+                "count": cnt,
+                "yearly_total": sum(expenses_list),
+                "total_per_month": expenses_list,
+                "highest": highest,
+                "highest_month": months[expenses_list.index(max(expenses_list))]['name'] if max(expenses_list) > 0 else None,
+            },
+            "categories": {
+                "labels": [str(c[1]) for c in totals_per_category],
+                "amounts": [c[0] for c in totals_per_category]
+            }
+        }
+
+        template = 'insights/_partial.html' if (
+            request.headers.get('Hx-Request')) else 'insights.html'
+        return render_template(template, data=insights_data, curr_year=curr_year, selected_year=year)
+    except Exception as e:
+        e = f"Error generating insights"
+        if (request.headers.get('Hx-Request')):
+            return render_template('error/_partial.html', title="Insights", error=str(e))
+
+        return render_template('error/error.html', title="Insights", error=str(e)), 500
 
 
 if __name__ == '__main__':

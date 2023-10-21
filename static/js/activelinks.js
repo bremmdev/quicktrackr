@@ -17,7 +17,6 @@ function styleActiveLink(path) {
 window.onload = function () {
   const navPath = "/" + window.location.pathname.split("/")[1];
   styleActiveLink(navPath);
-  ctx = null;
 };
 
 //set active link when we push a new state into the history

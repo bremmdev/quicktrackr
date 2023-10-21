@@ -1,0 +1,23 @@
+<section class="grid sm:grid-cols-2 lg:grid-cols-4 text-base xl:text-lg gap-5 text-center mt-6">
+  <div
+    class="flex flex-col gap-2 items-center justify-center bg-blue-50 p-4 lg:p-6 border-2 border-blue-700 text-blue-700 rounded-lg font-medium"
+  >
+    <span class="font-bold">Total expenses</span
+    ><span>${{ "%0.2f" | format(data.expenses.yearly_total | float) }}</span>
+  </div>
+  <div
+    class="flex flex-col gap-2 items-center justify-center bg-blue-50 p-4 lg:p-6 border-2 border-blue-700 text-blue-700 rounded-lg font-medium"
+  >
+    <span class="font-bold">Count</span><span>{{data.expenses.count}}</span>
+  </div>
+  <div
+    class="flex flex-col gap-2 items-center justify-center bg-blue-50 p-4 lg:p-6 border-2 border-blue-700 text-blue-700 rounded-lg font-medium"
+  >
+    <span class="font-bold">Highest</span><span>${{ "%0.2f" | format(data.expenses.highest | float) }}</span>
+  </div>
+  <div
+    class="flex flex-col gap-2 items-center justify-center bg-blue-50 p-4 lg:p-6 border-2 border-blue-700 text-blue-700 rounded-lg font-medium"
+  >
+    <span class="font-bold">Top month</span><span>{{data.expenses.highest_month}}</span>
+  </div>
+</section>
