@@ -1,8 +1,5 @@
 <a
   href="/expenses"
-  hx-push-url="true"
-  hx-target="#slot"
-  hx-swap="innerHTML show:no-scroll"
   class="flex w-fit items-center gap-1 font-medium py-2 px-4 md:px-5 rounded-xl border-2 border-blue-700 text-blue-700 hover:bg-blue-50 transition-all"
   ><img class="w-4 md:w-6" src="/static/icons/back.svg" /><span class="shrink-0"
     >Back</span
@@ -12,7 +9,7 @@
 <h1 class="font-medium text-center text-2xl md:text-4xl text-slate-700">
   Add Expense
 </h1>
-<form class="block max-w-lg w-11/12 mx-auto">
+<form class="block max-w-lg w-11/12 mx-auto" method="POST">
   <div class="flex flex-col gap-2 my-4">
     <label class="font-medium" for="title">Title</label>
     <input
@@ -20,11 +17,11 @@
       type="text"
       name="title"
       id="title"
-      value="{{expense.title}}"
+      value="{{ctx.expense.title}}"
       placeholder="Title"
       required
     />
-    <div class="font-bold text-red-500">{{errors["title"] }}</div>
+    <div class="font-bold text-red-500">{{ctx.errors["title"] }}</div>
   </div>
   <div class="flex flex-col gap-2 my-4">
     <label class="font-medium" for="amount">Amount</label>
@@ -35,10 +32,10 @@
       id="amount"
       step="0.01"
       placeholder="Amount"
-      value="{{expense.amount}}"
+      value="{{ctx.expense.amount}}"
       required
     />
-    <div class="font-bold text-red-500">{{errors["amount"] }}</div>
+    <div class="font-bold text-red-500">{{ctx.errors["amount"] }}</div>
   </div>
   <div class="flex flex-col gap-2 my-4">
     <label class="font-medium" for="date">Date</label>
@@ -48,10 +45,10 @@
       name="date"
       id="date"
       placeholder="Date"
-      value="{{expense.date}}"
+      value="{{ctx.expense.date}}"
       required
     />
-    <div class="font-bold text-red-500">{{errors["date"] }}</div>
+    <div class="font-bold text-red-500">{{ctx.errors["date"] }}</div>
   </div>
   <div class="flex flex-col gap-2 my-4">
     <label class="font-medium" for="category">Category</label>
@@ -61,19 +58,15 @@
       id="category"
       required
     >
-      {% for category in categories %}
+      {% for category in ctx.categories %}
 
       <option value="{{category.id}}">{{category.name.capitalize()}}</option>
 
       {% endfor %}
     </select>
-    <div class="font-bold text-red-500">{{errors["category"] }}</div>
+    <div class="font-bold text-red-500">{{ctx.errors["category"] }}</div>
   </div>
   <button
-    hx-post="/expenses/new"
-    hx-indicator=".spinner"
-    hx-target="#slot"
-    hx-push-url="true"
     class="flex gap-2 items-center text-white font-medium bg-blue-700 py-3 px-4 md:px-6 rounded-xl hover:bg-blue-600 transition-all disabled:opacity-50 my-6 mx-auto"
   >
     <span>Add expense</span><span class="spinner"></span>

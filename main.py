@@ -27,22 +27,24 @@ def index():
         # get current budget
         curr_month, curr_year = DateHelper.current_month_year()
         budget = Budget.find_by_month_year(curr_month, curr_year)
-
         balance = budget['amount'] - total_expenses
-        stats = {
-            "total_expenses": f"{total_expenses:.2f}",
-            "budget": f"{budget['amount']:.2f}",
-            "balance": f"{balance:.2f}"
+
+        ctx = {
+            "stats": {
+                "total_expenses": f"{total_expenses:.2f}",
+                "budget": f"{budget['amount']:.2f}",
+                "balance": f"{balance:.2f}"
+            },
+            "expenses": latest_expenses,
+            "budget": budget,
+            "today": today,
+            "disable_delete": True  # disable delete button for expenses
         }
 
-        is_partial = request.headers.get('Hx-Request')
-
-        template = 'overview/_partial.html' if is_partial else 'index.html'
-
-        return render_template(template, expenses=latest_expenses, stats=stats, budget=budget, today=today, disable_delete=True)
+        return render_template('index.html', ctx=ctx)
     except Exception as e:
         if (request.headers.get('Hx-Request')):
-            return render_template('error/_partial.html', title="Overview", error=str(e))
+            return render_template('error/error.html', title="Overview", error=str(e))
 
         return render_template('error/error.html', title="Overview", error=str(e)), 500
 
@@ -58,12 +60,21 @@ def expenses_route():
         page = int(request.args.get('page', 0))
         expenses, cnt = Expense.find_many(page, q, cat)
         categories = Category.find_all()
+
+        ctx = {
+            "expenses": expenses,
+            "cnt": cnt,
+            "categories": categories,
+        }
+
+        # on load more, return a partial
         template = 'expenses/_partial.html' if (
-            request.headers.get('Hx-Request')) else 'expenses.html'
-        return render_template(template, expenses=expenses, cnt=cnt, categories=categories, page=page)
+            request.headers.get('Hx-Trigger') == 'load-more' or request.headers.get('Hx-Target') == 'slot') else 'expenses.html'
+
+        return render_template(template, ctx=ctx, page=page)
     except Exception as e:
         if (request.headers.get('Hx-Request')):
-            return render_template('error/_partial.html', title="Expenses", error=str(e))
+            return render_template('error/error.html', title="Expenses", error=str(e))
 
         return render_template('error/error.html', title="Expenses", error=str(e)), 500
 
@@ -72,11 +83,15 @@ def expenses_route():
 def new_expense_form():
     try:
         categories = Category.find_all()
-        template = 'expenses/_new_expense.html' if (
-            request.headers.get('Hx-Request')) else 'new_expense.html'
-        return render_template(template, categories=categories, expense={}, errors={})
+        ctx = {
+            "categories": categories,
+            "expense": {},
+            "errors": {}
+        }
+
+        return render_template('new_expense.html', ctx=ctx)
     except Exception as e:
-        return str(e), 500
+        return render_template('error/error.html', title="Add expense", error=str(e))
 
 
 @app.route('/expenses/new', methods=['POST'])
@@ -100,7 +115,14 @@ def create_new_expense():
                 "date": date,
                 "category": category
             }
-            return render_template('expenses/_new_expense.html', categories=categories, errors=errors, expense=e)
+
+            ctx = {
+                "categories": categories,
+                "expense": e,
+                "errors": errors
+            }
+
+            return render_template('new_expense.html', ctx=ctx)
     except Exception as e:
         return str(e), 500
 
@@ -115,7 +137,14 @@ def delete_expenses():
             Expense.delete(id)
         expenses, cnt = Expense.find_many(0, q, cat)
         categories = Category.find_all()
-        return render_template('expenses/_partial.html', expenses=expenses, cnt=cnt, page=0, categories=categories)
+
+        ctx = {
+            "expenses": expenses,
+            "cnt": cnt,
+            "categories": categories,
+        }
+
+        return render_template('expenses/_partial.html', ctx=ctx, page=0)
     except Exception as e:
         return str(e), 500
 
@@ -128,9 +157,7 @@ def delete_expenses():
 def budgets_route():
     try:
         budgets = Budget.find_all()
-        template = 'budgets/_partial.html' if (
-            request.headers.get('Hx-Request')) else 'budgets.html'
-        return render_template(template, budgets=budgets)
+        return render_template('budgets.html', budgets=budgets)
     except Exception as e:
         if (request.headers.get('Hx-Request')):
             return render_template('error/_partial.html', title="Budgets", error=str(e))
@@ -143,9 +170,16 @@ def new_budget_form():
     try:
         months = DateHelper.months_in_year()
         current_month, current_year = DateHelper.current_month_year()
-        template = 'budgets/_new_budget.html' if (
-            request.headers.get('Hx-Request')) else 'new_budget.html'
-        return render_template(template, months=months, curr_year=current_year, curr_month=current_month, budget={}, errors={})
+
+        ctx = {
+            "months": months,
+            "curr_year": current_year,
+            "curr_month": current_month,
+            "budget": {},
+            "errors": {}
+        }
+
+        return render_template('new_budget.html', ctx=ctx)
     except Exception as e:
         return str(e), 500
 
@@ -183,12 +217,21 @@ def create_new_budget():
         # if there are errors, return to the form with the errors
         months = DateHelper.months_in_year()
         current_month, current_year = DateHelper.current_month_year()
-        budget = {
-            "month": month,
-            "year": year,
-            "amount": amount
+
+        ctx = {
+            "months": months,
+            "curr_year": current_year,
+            "curr_month": current_month,
+            "budget": {
+                "month": month,
+                "year": year,
+                "amount": amount
+            },
+            "errors": errors,
+            "repeat": repeat
         }
-        return render_template('budgets/_new_budget.html', months=months, curr_year=current_year, curr_month=current_month, budget=budget, errors=errors, repeat=repeat)
+
+        return render_template('budgets/_new_budget.html', ctx=ctx)
     except Exception as e:
         return str(e), 500
 
@@ -218,32 +261,39 @@ def update_current_budget():
     try:
         _action = request.form['_action']
 
-        # cancel button, so just return
-        if _action == 'cancel':
-            return redirect('/'), 303
-
         budget_amount = float(request.form['budget'])
-        error = Budget.validate_new_budget(budget_amount)
-        if error:
-            return error, 400
-
-        # update budget
         id = request.form['budget_id']
-        new_budget = Budget.update(id, budget_amount)
 
+        # save button, so validate and save
+        if _action == 'save':
+            error = Budget.validate_new_budget(budget_amount)
+            if error:
+                return error, 400
+
+            # update budget
+            new_budget = Budget.update(id, budget_amount)
+
+        # cancel button, get the existing budget
+        if _action == 'cancel':
+            existing_budget = Budget.find_by_id(id)
+
+        # get data for stats
         first_day, last_day = DateHelper.month_range()
 
         # total expenses for this month
         total_expenses = Expense.find_by_month(first_day, last_day)
         balance = budget_amount - total_expenses
 
-        stats = {
-            "total_expenses": f"{total_expenses:.2f}",
-            "budget": f"{budget_amount :.2f}",
-            "balance": f"{balance:.2f}"
+        ctx = {
+            "stats": {
+                "total_expenses": f"{total_expenses:.2f}",
+                "budget": f"{budget_amount :.2f}",
+                "balance": f"{balance:.2f}"
+            },
+            "budget": new_budget if _action == 'save' else existing_budget
         }
 
-        return render_template('overview/_stats.html', stats=stats, budget=new_budget)
+        return render_template('overview/_stats.html', ctx=ctx)
     except ValueError:
         return 'Invalid budget', 400
 
@@ -290,9 +340,7 @@ def update_budget():
 def categories_route():
     try:
         categories = Category.find_all()
-        template = 'categories/_partial.html' if (
-            request.headers.get('Hx-Request')) else 'categories.html'
-        return render_template(template, categories=categories)
+        return render_template('categories.html', categories=categories)
     except Exception as e:
         if (request.headers.get('Hx-Request')):
             return render_template('error/_partial.html', title="Categories", error=str(e))
@@ -372,9 +420,7 @@ def insights_route():
             }
         }
 
-        template = 'insights/_partial.html' if (
-            request.headers.get('Hx-Request')) else 'insights.html'
-        return render_template(template, data=insights_data, curr_year=curr_year, selected_year=year)
+        return render_template('insights.html', data=insights_data, curr_year=curr_year, selected_year=year)
     except Exception as e:
         e = f"Error generating insights"
         if (request.headers.get('Hx-Request')):

@@ -1,7 +1,7 @@
 <li
   class="relative flex gap-2 sm:gap-4 lg:gap-8 justify-between items-center px-1 sm:px-2 lg:px-5 py-3 even:bg-slate-100 odd:bg-slate-200"
 >
-{% if not disable_delete %}
+{% if not ctx.disable_delete %}
   <input
     hx-on="change:updateDeleteItems(event, 'expense')"
     type="checkbox"

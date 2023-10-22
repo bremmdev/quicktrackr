@@ -4,29 +4,27 @@
   </h1>
   <a
     href="/expenses/new"
-    hx-push-url="true"
-    hx-target="#slot"
     class="ml-auto text-white font-medium bg-blue-700 py-3 px-4 md:px-6 rounded-xl hover:bg-blue-600 transition-all"
     >Add Expense</a
   >
 </div>
 
 <div class="my-2 font-medium">
-  {{ cnt }} {{ "expense" if cnt == 1 else "expenses" }} in total
+  {{ ctx.cnt }} {{ "expense" if ctx.cnt == 1 else "expenses" }} in total
 <hdiv>
 
-<form hx-get="/expenses" hx-trigger="keyup from:find #q delay:300ms, search from:find #q, change from:find #category" class="flex gap-2 my-4" hx-target="#slot" hx-push-url="true" >
+<form action="/expenses" hx-trigger="keyup from:find #q delay:300ms, search from:find #q, change from:find #category" class="flex gap-2 my-4">
 <input value="{{request.args.get('q') or ''}}" type="search" name="q" id="q" placeholder="Search expenses" class="w-full bg-blue-50 border border-slate-400 rounded-md py-2 px-3" />
 <select class="bg-blue-50 border border-slate-400 rounded-md py-2 px-3" name="category" id="category">
   <option value="all" {% if request.args.get('category') == None %}selected{% endif %}>All categories</option>
-  {% for category in categories %}
+  {% for category in ctx.categories %}
   <option value="{{category.name}}" {% if request.args.get('category') == category.name %}selected{% endif %}>{{category.name.capitalize()}}</option>
   {% endfor %}
 </select>
 </form>
 
 <ul id="expenses-list" class="py-4">
-  {% for expense in expenses %}
+  {% for expense in ctx.expenses %}
 
   {% include 'expenses/_expense_items.html' %}
 
@@ -35,7 +33,7 @@
 
 
 <div id="actions" {% if page != 0 %}hx-swap-oob="true"{% endif %}>
-  {% if expenses|length > 0 %}
+  {% if ctx.expenses|length > 0 %}
   <button
     disabled
     id="delete-expenses-btn"
@@ -47,7 +45,7 @@
   >
     <span>Delete expenses</span><span class="spinner"></span>
   </button>
-  <button {% if (page+1) * 10 >= cnt %}disabled{% endif %} hx-get="/expenses?q={{request.args.get('q') or ''}}&category={{request.args.get('category') or 'all'}}&page={{ page + 1 }}"
+  <button {% if (page+1) * 10 >= ctx.cnt %}disabled{% endif %} hx-get="/expenses?q={{request.args.get('q') or ''}}&category={{request.args.get('category') or 'all'}}&page={{ page + 1 }}"
     class="flex w-fit mx-auto items-center gap-1 font-medium py-2 px-4 md:px-5 rounded-xl border-2 border-blue-700 text-blue-700 hover:bg-blue-50 transition-all my-4 disabled:opacity-50" 
     id="load-more"
     hx-target="#expenses-list" 

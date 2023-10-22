@@ -1,4 +1,4 @@
-<a href="/budgets" hx-push-url="true" hx-target="#slot" hx-swap="innerHTML show:no-scroll"
+<a href="/budgets"
   class="flex w-fit items-center gap-1 font-medium py-2 px-4 md:px-5 rounded-xl border-2 border-blue-700 text-blue-700 hover:bg-blue-50 transition-all"><img
     class="w-4 md:w-6" src="/static/icons/back.svg" /><span class="shrink-0">Back</span></a>
 
@@ -13,38 +13,38 @@
   </div>
   <div class="font-medium flex gap-4 bg-slate-100 p-4 justify-end w-full">
     <button id="cancel-btn" class="bg-white text-slate-950 border-2 border-slate-950 px-4 py-2 rounded-md hover:bg-slate-100 transition-all focus:outline-blue-500 focus:outline-offset-4" hx-on:click="document.getElementById('confirmation-modal').close()">Cancel</button>
-    <button hx-on:click="document.getElementById('confirmation-modal').close()"  id="confirm-btn" hx-post="/budgets/new" hx-include="input, select" hx-target="#slot" hx-push-url="true"
+    <button hx-on:click="document.getElementById('confirmation-modal').close()" hx-target="body" id="confirm-btn" hx-post="/budgets/new" hx-include="input, select" hx-push-url="true"
      class="bg-slate-950 border-2 border-transparent text-white px-4 py-2 rounded-md hover:bg-slate-700 transition-all focus-visible:outline-blue-500 focus-visible:outline-offset-4 focus:outline-blue-500 focus:outline-offset-4">Confirm</button> 
   </div>
 </dialog>
 
-<form id="add-budget-form" class="block max-w-lg w-11/12 mx-auto">
+<form id="add-budget-form" class="block max-w-lg w-11/12 mx-auto" method="POST">
   <div class="flex flex-col gap-2 my-4 mb-0">
     <fieldset class="flex gap-2 justify-between">
       <legend class="font-medium my-2">Start month and year</legend>
 
       <select class="bg-blue-50 border border-slate-400 rounded-md py-2 px-3 flex-1" name="month" id="month">
-        {% for month in months %}
-        <option value="{{month.number}}" {% if month.number==curr_month %}selected{% endif %}>{{month.name}}</option>
+        {% for month in ctx.months %}
+        <option value="{{month.number}}" {% if month.number==ctx.curr_month %}selected{% endif %}>{{month.name}}</option>
         {% endfor %}
       </select>
 
       <input type="number" class="bg-blue-50 border border-slate-400 rounded-md py-2 w-20 pl-2 sm:w-24 text-center"
-        name="year" id="year" value="{{budget.year or curr_year}}" step="1" />
+        name="year" id="year" value="{{ctx.budget.year or ctx.curr_year}}" step="1" />
     </fieldset>
     <div class="flex gap-2 items-center">
       <label class="font-medium" for="repeat">Repeat for rest of the year</label>
       <input type="checkbox" name="repeat" id="repeat" {% if repeat %}checked{% endif %} />
     </div>
-    <div class="font-bold text-red-500">{{errors["month"] }}</div>
-    <div class="font-bold text-red-500">{{errors["year"] }}</div>
+    <div class="font-bold text-red-500">{{ctx.errors["month"] }}</div>
+    <div class="font-bold text-red-500">{{ctx.errors["year"] }}</div>
   </div>
 
   <div class="flex flex-col gap-2 my-2">
     <label class="font-medium" for="amount">Amount</label>
     <input class="bg-blue-50 border border-slate-400 rounded-md py-2 px-3" type="number" name="amount" id="amount"
-      step="0.01" placeholder="Amount" value="{{budget.amount}}" required />
-    <div class="font-bold text-red-500">{{errors["amount"] }}</div>
+      step="0.01" placeholder="Amount" value="{{ctx.budget.amount}}" required />
+    <div class="font-bold text-red-500">{{ctx.errors["amount"] }}</div>
   </div>
 
   <button id="add-budgets-btn" hx-on:click="event.preventDefault();document.getElementById('confirmation-modal').showModal();" 

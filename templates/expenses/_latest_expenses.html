@@ -1,10 +1,10 @@
 <ul id="expenses-list">
-  {% for expense in expenses %}
+  {% for expense in ctx.expenses %}
 
   {% include 'expenses/_expense_items.html' %}
 
   {% endfor %}
 </ul>
-<a href="/expenses" hx-push-url="true" hx-target="#slot" hx-swap="innerHTML show:no-scroll"
+<a href="/expenses"
   class="inline-block text-white font-medium bg-blue-700 py-3 px-4 md:px-6 rounded-xl hover:bg-blue-600 transition-all my-2 w-fit"
  >All Expenses</a>
