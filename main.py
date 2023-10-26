@@ -1,4 +1,4 @@
-from flask import Flask, render_template, render_template_string, request, redirect
+from flask import Flask, render_template, render_template_string, request, redirect, jsonify
 from models.category import Category, CategoryExistsError, CategoryNotFoundError
 from models.expenses import Expense
 from models.budget import Budget
@@ -77,6 +77,26 @@ def expenses_route():
             return render_template('error/error.html', title="Expenses", error=str(e))
 
         return render_template('error/error.html', title="Expenses", error=str(e)), 500
+
+
+@app.route('/api/expenses')
+def expenses_json():
+    try:
+        q = request.args.get('q', '')
+        cat = request.args.get('category', 'all')
+        page = int(request.args.get('page', 0))
+
+        if page < 0:
+            raise ValueError()
+
+        expenses, cnt = Expense.find_many(page, q, cat)
+        return jsonify(expenses)
+
+    except ValueError as ve:
+        return jsonify({'error': 'Invalid page number'}), 400
+
+    except Exception as e:
+        return jsonify({'error': 'Internal Server Error'}), 500
 
 
 @app.route('/expenses/new', methods=['GET'])

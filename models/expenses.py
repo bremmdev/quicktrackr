@@ -17,7 +17,7 @@ class Expense:
         self.id = str(uuid.uuid4())
 
     @classmethod
-    def find_many(cls, page, q='', category_filter='all'):
+    def find_many(cls, page=0, q='', category_filter='all'):
         db = DatabaseConnection(DB_NAME)
         conn = db.get_connection()
         offset = page * PER_PAGE
