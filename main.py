@@ -448,6 +448,15 @@ def insights_route():
 
         return render_template('error/error.html', title="Insights", error=str(e)), 500
 
+# -------------------------
+# 404
+# -------------------------
+
+
+@app.errorhandler(404)
+def page_not_found(error):
+    return render_template('error/page_not_found.html'), 404
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
