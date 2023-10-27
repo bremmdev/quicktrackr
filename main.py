@@ -90,7 +90,7 @@ def expenses_json():
             raise ValueError()
 
         expenses, cnt = Expense.find_many(page, q, cat)
-        return jsonify(expenses)
+        return jsonify({ "count": cnt, "page": page, "expenses": expenses})
 
     except ValueError as ve:
         return jsonify({'error': 'Invalid page number'}), 400
