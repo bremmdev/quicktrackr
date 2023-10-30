@@ -1,3 +1,17 @@
-{% extends 'layout.html' %} {% block content %} 
-{% include'error/_partial.html' %} 
+{% extends 'layout.html' %} {% block content %}
+
+<h1 class="font-medium -translate-y-1 text-2xl md:text-4xl text-slate-700">
+  {{ title }}
+</h1>
+
+<div class="my-6 lg:my-8 flex flex-col gap-6 lg:gap-8">
+  <p id="global-error" class="font-bold text-red-500">{{error}}</p>
+
+  <a
+    href="/"
+    class="flex w-fit items-center gap-1 font-medium py-2 px-4 md:px-5 rounded-xl border-2 border-blue-700 text-blue-700 hover:bg-blue-50 transition-all disabled:opacity-50"
+    >Home</a
+  >
+</div>
+
 {% endblock %}

@@ -1,4 +1,5 @@
-from flask import Flask, render_template, render_template_string, request, redirect, jsonify
+from flask import Flask, render_template, render_template_string, request, redirect, jsonify, abort, Response
+from flask_cors import CORS
 from models.category import Category, CategoryExistsError, CategoryNotFoundError
 from models.expenses import Expense
 from models.budget import Budget
@@ -8,12 +9,14 @@ import datetime
 
 
 app = Flask(__name__)
+# enable CORS for all API routes
+cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 
 # -------------------------
 # INDEX (OVERVIEW)
 # -------------------------
-@app.route('/')
+@app.route('/', methods=['GET'])
 def index():
     # Get the 5 most recent expenses
     try:
@@ -43,16 +46,13 @@ def index():
 
         return render_template('index.html', ctx=ctx)
     except Exception as e:
-        if (request.headers.get('Hx-Request')):
-            return render_template('error/error.html', title="Overview", error=str(e))
-
-        return render_template('error/error.html', title="Overview", error=str(e)), 500
+        abort(500, description="Could not load overview page")
 
 
 # -------------------------
 # EXPENSES
 # -------------------------
-@app.route('/expenses')
+@app.route('/expenses', methods=['GET'])
 def expenses_route():
     try:
         q = request.args.get('q', '')
@@ -67,19 +67,22 @@ def expenses_route():
             "categories": categories,
         }
 
+        is_load_more = request.headers.get('Hx-Trigger') == 'load-more'
+
         # on load more, return a partial
-        template = 'expenses/_partial.html' if (
-            request.headers.get('Hx-Trigger') == 'load-more' or request.headers.get('Hx-Target') == 'slot') else 'expenses.html'
+        template = 'expenses/_partial.html' if is_load_more else 'expenses.html'
 
         return render_template(template, ctx=ctx, page=page)
     except Exception as e:
-        if (request.headers.get('Hx-Request')):
-            return render_template('error/error.html', title="Expenses", error=str(e))
+        # inline error for load more
+        if is_load_more:
+            # return a span because we need to use HX-Reselect to select the whole error message to replace
+            return Response("<span>Could not load expenses</span>", 500, {'HX-Retarget': '#error', 'HX-Reswap': 'innerHTML', 'HX-Reselect': '*'})
 
-        return render_template('error/error.html', title="Expenses", error=str(e)), 500
+        abort(500, description="Could not load expenses")
 
 
-@app.route('/api/expenses')
+@app.route('/api/expenses', methods=['GET'])
 def expenses_json():
     try:
         q = request.args.get('q', '')
@@ -90,7 +93,7 @@ def expenses_json():
             raise ValueError()
 
         expenses, cnt = Expense.find_many(page, q, cat)
-        return jsonify({ "count": cnt, "page": page, "expenses": expenses})
+        return jsonify({"count": cnt, "page": page, "expenses": expenses})
 
     except ValueError as ve:
         return jsonify({'error': 'Invalid page number'}), 400
@@ -111,7 +114,7 @@ def new_expense_form():
 
         return render_template('new_expense.html', ctx=ctx)
     except Exception as e:
-        return render_template('error/error.html', title="Add expense", error=str(e))
+        abort(500, description="Could not load page")
 
 
 @app.route('/expenses/new', methods=['POST'])
@@ -144,7 +147,7 @@ def create_new_expense():
 
             return render_template('new_expense.html', ctx=ctx)
     except Exception as e:
-        return str(e), 500
+        return Response("Server error while creating budget", 500, {'HX-Retarget': '#error', 'HX-Reswap': 'innerHTML'})
 
 
 @app.route('/expenses', methods=['DELETE'])
@@ -166,23 +169,21 @@ def delete_expenses():
 
         return render_template('expenses/_partial.html', ctx=ctx, page=0)
     except Exception as e:
-        return str(e), 500
+        return Response("Server error while deleting expense", 500, {'HX-Retarget': '#error', 'HX-Reswap': 'innerHTML'})
 
 # -------------------------
 # BUDGETS
 # -------------------------
 
 
-@app.route('/budgets')
+@app.route('/budgets', methods=['GET'])
 def budgets_route():
     try:
         budgets = Budget.find_all()
+
         return render_template('budgets.html', budgets=budgets)
     except Exception as e:
-        if (request.headers.get('Hx-Request')):
-            return render_template('error/_partial.html', title="Budgets", error=str(e))
-
-        return render_template('error/error.html', title="Budgets", error=str(e)), 500
+        abort(500, description="Could not load budgets")
 
 
 @app.route('/budgets/new', methods=['GET'])
@@ -201,7 +202,7 @@ def new_budget_form():
 
         return render_template('new_budget.html', ctx=ctx)
     except Exception as e:
-        return str(e), 500
+        abort(500, description="Could not load page")
 
 
 @app.route('/budgets/new', methods=['POST'])
@@ -251,9 +252,9 @@ def create_new_budget():
             "repeat": repeat
         }
 
-        return render_template('budgets/_new_budget.html', ctx=ctx)
+        return render_template('new_budget.html', ctx=ctx)
     except Exception as e:
-        return str(e), 500
+        return Response("Server error while creating budget", 500, {'HX-Retarget': '#error', 'HX-Reswap': 'innerHTML'})
 
 
 @app.route('/budgets', methods=['DELETE'])
@@ -265,13 +266,16 @@ def delete_budgets():
         budgets = Budget.find_all()
         return render_template('budgets/_partial.html', budgets=budgets)
     except Exception as e:
-        return str(e), 500
+        return Response("Server error while deleting budget", 500, {'HX-Retarget': '#error', 'HX-Reswap': 'innerHTML'})
 
 
 @app.route('/budgets/current/edit', methods=['GET'])
 def edit_current_budget():
-    amount = request.args.get('amount', 0)
-    id = request.args.get('id', '')
+    try:
+        amount = request.args.get('amount', 0)
+        id = request.args.get('id', '')
+    except Exception as e:
+        return Response("Could not load current budget", 500, {'HX-Retarget': '#error', 'HX-Reswap': 'innerHTML'})
 
     return render_template('budgets/_edit_current_budget.html', amount=amount, id=id)
 
@@ -280,7 +284,6 @@ def edit_current_budget():
 def update_current_budget():
     try:
         _action = request.form['_action']
-
         budget_amount = float(request.form['budget'])
         id = request.form['budget_id']
 
@@ -315,7 +318,9 @@ def update_current_budget():
 
         return render_template('overview/_stats.html', ctx=ctx)
     except ValueError:
-        return 'Invalid budget', 400
+        return Response("Invalid budget", 400, {'HX-Retarget': '#error', 'HX-Reswap': 'innerHTML'})
+    except Exception as e:
+        return Response("Could not update budget", 500, {'HX-Retarget': '#error', 'HX-Reswap': 'innerHTML'})
 
 
 @app.route('/budgets/edit', methods=['GET'])
@@ -340,7 +345,7 @@ def update_budget():
         budget_amount = float(request.form['budget'])
         error = Budget.validate_new_budget(budget_amount)
         if error:
-            return error, 400
+            raise ValueError()
 
         # update budget
         id = request.form['budget_id']
@@ -349,23 +354,23 @@ def update_budget():
         return render_template('budgets/_budget_item.html', budget=new_budget)
 
     except ValueError:
-        return 'Invalid budget', 400
+        return Response("Invalid budget", 400, {'HX-Retarget': '#error', 'HX-Reswap': 'innerHTML'})
+
+    except Exception as e:
+        return Response("Could not update budget", 500, {'HX-Retarget': '#error', 'HX-Reswap': 'innerHTML'})
 
 # -------------------------
 # CATEGORIES
 # -------------------------
 
 
-@app.route('/categories')
+@app.route('/categories', methods=['GET'])
 def categories_route():
     try:
         categories = Category.find_all()
         return render_template('categories.html', categories=categories)
     except Exception as e:
-        if (request.headers.get('Hx-Request')):
-            return render_template('error/_partial.html', title="Categories", error=str(e))
-
-        return render_template('error/error.html', title="Categories", error=str(e)), 500
+        abort(500, description="Could not load categories")
 
 
 @app.route('/categories', methods=['POST'])
@@ -373,10 +378,10 @@ def new_category():
     try:
         c = Category.create(request.form['name'])
     except (CategoryExistsError, ValueError) as e:
-        return str(e), 400
+        return Response(str(e), 400, {'HX-Retarget': '#error', 'HX-Reswap': 'innerHTML'})
 
     except Exception as e:
-        return str(e), 500
+        return Response("Error while creating category", 500, {'HX-Retarget': '#error', 'HX-Reswap': 'innerHTML'})
 
     return render_template('categories/_category_item.html', category=c)
 
@@ -387,31 +392,26 @@ def delete_category(id):
         Category.delete(id)
         return '', 200
     except sqlite3.IntegrityError as e:
-        return 'Cannot delete a category that has expenses', 400
+        return Response('Cannot delete a category that has expenses', 400, {'HX-Retarget': '#error', 'HX-Reswap': 'innerHTML'})
     except CategoryNotFoundError as e:
-        return str(e), 400
+        return Response(str(e), 400, {'HX-Retarget': '#error', 'HX-Reswap': 'innerHTML'})
 
 # -------------------------
 # INSIGHTS
 # -------------------------
 
 
-@app.route('/insights')
+@app.route('/insights', methods=['GET'])
 def insights_route():
-
     curr_year = datetime.datetime.now().year
 
     try:
         year = int(request.args.get('year', curr_year))
 
         if year != curr_year and year != curr_year - 1:
-            raise ValueError(f"Invalid year {year}")
+            raise ValueError()
     except ValueError as e:
-        if 'year' not in str(e):
-            e = f"Invalid year"
-        if (request.headers.get('Hx-Request')):
-            return render_template('error/_partial.html', title="Insights", error=str(e))
-        return render_template('error/error.html', title="Insights", error=str(e)), 500
+        abort(400, description="Invalid year")
 
     try:
         months = DateHelper.months_in_year()
@@ -442,20 +442,31 @@ def insights_route():
 
         return render_template('insights.html', data=insights_data, curr_year=curr_year, selected_year=year)
     except Exception as e:
-        e = f"Error generating insights"
-        if (request.headers.get('Hx-Request')):
-            return render_template('error/_partial.html', title="Insights", error=str(e))
-
-        return render_template('error/error.html', title="Insights", error=str(e)), 500
+        abort(500, description="Could not load insights")
 
 # -------------------------
-# 404
+# error handlers
 # -------------------------
 
 
 @app.errorhandler(404)
 def page_not_found(error):
     return render_template('error/page_not_found.html'), 404
+
+
+@app.errorhandler(400)
+def bad_request(error):
+    return render_template('error/error.html', title="Bad Request", error=error.description), 400
+
+
+@app.errorhandler(405)
+def not_allowed(error):
+    return render_template('error/error.html', title="Method Not Allowed", error=error.description), 405
+
+
+@app.errorhandler(500)
+def internal_server_error(error):
+    return render_template('error/error.html', title="Internal Server Error", error=error.description), 500
 
 
 if __name__ == '__main__':

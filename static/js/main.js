@@ -1,13 +1,10 @@
 /**********GLOBAL ERRORS ***********/
-document.addEventListener("htmx:afterRequest", function (event) {
-  const errorEl = document.getElementById("error");
-  const status = event.detail.xhr.status;
+document.addEventListener("htmx:beforeSwap", function (event) {
+  //clear any existing errors
+  document.getElementById("error").innerHTML = "";
 
-  if (status === 400 || status === 500) {
-    errorEl.innerHTML = event.detail.xhr.response;
-  } else {
-    errorEl.innerHTML = "";
-  }
+  //manually turn on swapping content on errors
+  event.detail.shouldSwap = true;
 });
 
 //clear category form after successful submission
