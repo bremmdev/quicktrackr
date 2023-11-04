@@ -6,7 +6,7 @@ function styleActiveLink(path) {
     link.classList.remove("active-link");
   });
 
-  const activeLink = links.find((link) => link.pathname === path);
+  const activeLink = links.find((link) => link.pathname === path);   
 
   if (activeLink) {
     activeLink.classList.add("active-link");
@@ -22,7 +22,7 @@ window.onload = function () {
 //set active link when we push a new state into the history
 document.addEventListener("htmx:pushedIntoHistory", function (event) {
   //get the path from the event (for instance /expenses or /budgets)
-  const navPath = "/" + event.detail.path.split("/")[1];
+  const navPath = "/" + event.detail.path.split("/")[1].split("?")[0];
   styleActiveLink(navPath);
 });
 

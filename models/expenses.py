@@ -22,21 +22,27 @@ class Expense:
         conn = db.get_connection()
         offset = page * PER_PAGE
         query = f'%{q}%' if q else '%'
-        cat = f'%{category_filter}%' if category_filter != 'all' else '%'
+        cat = category_filter if category_filter != 'all' else '%'
         try:
             with conn:
                 cursor = conn.cursor()
+
+                # get expenses for current page based on query and category
                 cursor.execute('''
           SELECT expense.id, title, amount, date, name FROM expense JOIN category ON expense.categoryId = category.id WHERE title LIKE ? AND category.name LIKE ? ORDER BY date DESC LIMIT ? OFFSET ?
         ''', (query, cat, PER_PAGE, offset))
                 rows = cursor.fetchall()
                 expenses = [{"id": row[0], "title": row[1], "amount": row[2],
                              "date": row[3], "category": row[4]} for row in rows]
+
+                # get total number of expenses based on query and category
                 cursor.execute('''
           SELECT COUNT(*) FROM expense JOIN category ON expense.categoryId = category.id WHERE title LIKE ? AND category.name LIKE ?
         ''', (query, cat))
                 cnt = cursor.fetchone()[0]
-                return expenses, cnt
+
+                has_next_page = cnt > (offset + PER_PAGE)
+                return expenses, cnt, has_next_page
         except sqlite3.Error as e:
             raise e
 
@@ -78,7 +84,7 @@ class Expense:
 
         except sqlite3.Error as e:
             raise e
-    
+
     def expenses_per_category(year):
         start_date = f'{year}-01-01'
         end_date = f'{year}-12-31'

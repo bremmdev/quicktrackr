@@ -58,12 +58,13 @@ def expenses_route():
         q = request.args.get('q', '')
         cat = request.args.get('category', 'all')
         page = int(request.args.get('page', 0))
-        expenses, cnt = Expense.find_many(page, q, cat)
+        expenses, cnt, has_next_page = Expense.find_many(page, q, cat)
         categories = Category.find_all()
 
         ctx = {
             "expenses": expenses,
             "cnt": cnt,
+            "has_next_page": has_next_page,
             "categories": categories,
         }
 
@@ -158,12 +159,13 @@ def delete_expenses():
     try:
         for id in ids:
             Expense.delete(id)
-        expenses, cnt = Expense.find_many(0, q, cat)
+        expenses, cnt, has_next_page = Expense.find_many(0, q, cat)
         categories = Category.find_all()
 
         ctx = {
             "expenses": expenses,
             "cnt": cnt,
+            "has_next_page": has_next_page,
             "categories": categories,
         }
 
