@@ -61,7 +61,8 @@ class Expense:
         except sqlite3.Error as e:
             raise e
 
-    def total_per_month(year):
+    @classmethod
+    def total_per_month(cls, year):
         start_date = f'{year}-01-01'
         end_date = f'{year}-12-31'
         db = DatabaseConnection(DB_NAME)
@@ -85,7 +86,8 @@ class Expense:
         except sqlite3.Error as e:
             raise e
 
-    def expenses_per_category(year):
+    @classmethod
+    def expenses_per_category(cls, year):
         start_date = f'{year}-01-01'
         end_date = f'{year}-12-31'
         db = DatabaseConnection(DB_NAME)
@@ -129,7 +131,6 @@ class Expense:
                 conn.commit()
 
         except sqlite3.Error as e:
-            print(e)
             raise e
 
     @classmethod

@@ -120,8 +120,8 @@ def new_expense_form():
 
 @app.route('/expenses/new', methods=['POST'])
 def create_new_expense():
-    title = request.form['title']
-    amount = float(request.form['amount']) if request.form['amount'] else 0
+    title = request.form.get('title', '')
+    amount = float(request.form.get('amount', 0))
     date = request.form['date']
     category = request.form['category']
 

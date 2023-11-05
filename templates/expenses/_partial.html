@@ -38,12 +38,12 @@
     disabled
     id="delete-expenses-btn"
     hx-delete="/expenses?q={{request.args.get('q') or ''}}&category={{request.args.get('category') or 'all'}}"
-    hx-indicator=".spinner"
+    hx-indicator="#delete-spinner"
     hx-include="[name='selected-expense']"
     hx-target="#slot"
     class="flex gap-2 items-center text-white font-medium bg-blue-700 py-3 px-4 md:px-6 rounded-xl hover:bg-blue-600 transition-all disabled:opacity-50"
   >
-    <span>Delete expenses</span><span class="spinner"></span>
+    <span class="flex gap-1 items-center">Delete expenses</span><span id="delete-spinner" class="spinner"></span>
   </button>
   <button {% if not ctx.has_next_page %}disabled{% endif %} hx-get="/expenses?q={{request.args.get('q') or ''}}&category={{request.args.get('category') or 'all'}}&page={{ page + 1 }}"
     class="flex w-fit mx-auto items-center gap-1 font-medium py-2 px-4 md:px-5 rounded-xl border-2 border-blue-700 text-blue-700 hover:bg-blue-50 transition-all my-4 disabled:opacity-50" 
@@ -51,8 +51,9 @@
     hx-target="#expenses-list" 
     hx-select="ul > li, #action" 
     hx-swap="beforeend"
+    hx-indicator="#load-more-spinner"
     >
-    <span class="shrink-0">Load More</span>
+    <span class="shrink-0 flex gap-1 items-center">Load More<span id="load-more-spinner" class="spinner dark"></span>
   </button>
   {% endif %}
 </div>

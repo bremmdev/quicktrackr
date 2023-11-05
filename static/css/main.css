@@ -32,6 +32,11 @@ div.htmx-swapping {
   display:none;
 }
 
+.spinner.dark {
+  border: 3px solid #bfdbfe;
+  border-top: 3px solid #1d4ed8;
+}
+
 .spinner.htmx-request {
   display: inline-flex;
 }
