@@ -93,7 +93,8 @@ def expenses_json():
         if page < 0:
             raise ValueError()
 
-        expenses, cnt = Expense.find_many(page, q, cat)
+        expenses, cnt, has_next_page = Expense.find_many(page, q, cat)
+
         return jsonify({"count": cnt, "page": page, "expenses": expenses})
 
     except ValueError as ve:
